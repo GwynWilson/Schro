@@ -6,6 +6,7 @@ from matplotlib import animation
 
 class schrodinger(object):
     def __init__(self, x, psi, v, k, hbar=1, m=1, t=0):
+        # Setting neccesary variables
         self.x = x
         self.dx = x[1] - x[0]
         self.N = len(x)
@@ -73,26 +74,24 @@ dk = 2 * np.pi / a
 k0 = - 0.5 * N * dk
 k = k0 + dk * np.arange(N)
 
-
-#Initial k value
-k_ini = 10
+# Initial k value
+k_ini = 0
 
 hbar = 1
 m = 1
 
-#Defining time quantities
+# Defining time quantities
 t = 0
 dt = 0.01
 Nstep = 5
 t_max = 120
 frames = int(t_max / float(Nstep * dt))
 
-#Defining wavefunction and potential
+# Defining wavefunction and potential
 psi_x = gauss_init(x, k_ini, x0)
 v_x = [V(k) for k in x]
 
 s = schrodinger(x, psi_x, v_x, k, hbar, m, t)
-
 
 # Plotting
 fig = plt.figure()
@@ -100,6 +99,7 @@ ax1 = fig.add_subplot(211)
 sin_line, = ax1.plot([], [])
 potential_line, = ax1.plot([], [])
 centre_line, = ax1.plot([], [])
+actual_line, = ax1.plot([], [])
 
 ax1.set_xlim(-xmax, xmax)
 ax1.set_ylim(-1, 1)
@@ -114,19 +114,21 @@ def init():
     sin_line.set_data(x, conj(s.psi_x))
     k_line.set_data(k, conj(s.psi_k))
     centre_line.set_data([], [])
+    actual_line.set_data([], [])
     potential_line.set_data(x, v_x)
-    return sin_line, k_line, centre_line,
+    return sin_line, k_line, centre_line, actual_line,
 
 
 def animate(i):
     s.evolve_t(Nstep, dt)
     sin_line.set_data(s.x, conj(s.psi_x))
     k_line.set_data(s.k, abs(s.psi_k))
-    centre_line.set_data(2 * [x0 + (s.t * (k_ini*hbar/m))], [0, 1])
+    centre_line.set_data(2 * [x0 + (s.t * (k_ini * hbar / m))], [0, 1])
+#    actual_line.set_data(2 * [x0 + (s.t * (21.5 * hbar / m))], [0, 1])
     potential_line.set_data(x, v_x)
-    return sin_line, k_line, centre_line,
+    return sin_line, k_line, centre_line, actual_line,
 
 
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                                frames=frames, interval=30, blit=True)
+                               frames=frames, interval=30, blit=True)
 plt.show()

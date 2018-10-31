@@ -3,13 +3,15 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.fftpack import fft, ifft, fftfreq, fftshift
 
+
 def sin(x, f, t):
-    return np.cos(f*x + t)
+    return np.cos(f * x + t)
+
 
 class sinevolve(object):
     def __init__(self, x, y, f, dt, t, k):
         self.x = x
-        self.dx = x[1] -x[0]
+        self.dx = x[1] - x[0]
         self.N = len(x)
         self.sinx = y
         self.sink = fft(self.sinx)
@@ -41,23 +43,22 @@ class sinevolve(object):
         return self.x
 
 
-#Setting up x
-N = 2**15
+# Setting up x
+N = 2 ** 8
+print(N)
 dx = 0.1
 a = dx * N
-#x = dx * (np.arange(N) - 0.5 * N)
-x = np.linspace(0, N*dx, N)
+# x = dx * (np.arange(N) - 0.5 * N)
+x = np.linspace(0, N * dx, N)
 xmax = -x[0]
 
-
-#dk = 2*np.pi / a
-#k = -(a/2) + dk * np.arange(N)
-k = fftfreq(N, dx/(2*np.pi))
+# dk = 2*np.pi / a
+# k = -(a/2) + dk * np.arange(N)
+k = fftfreq(N, dx / (2 * np.pi))
 k = fftshift(k)
 
-
-#Setting up time
-f = 0.5
+# Setting up time
+f = 0.25
 t = 0
 dt = 0.1
 Nstep = 10
@@ -67,7 +68,7 @@ frames = int(t_max / float(Nstep * dt))
 sinx = [sin(j, f, t) for j in x]
 s = sinevolve(x, sinx, f, dt, t, k)
 
-#Plotting
+# Plotting
 fig = plt.figure()
 ax1 = fig.add_subplot(211)
 sin_line, = ax1.plot([], [])
@@ -77,19 +78,22 @@ ax1.set_ylim(-1, 1)
 
 ax2 = fig.add_subplot(212)
 k_line, = ax2.plot([], [])
-ax2.set_xlim(-1,1)
-ax2.set_ylim(-1,1)
+ax2.set_xlim(-1, 1)
+ax2.set_ylim(-1, 1)
+
 
 def init():
     sin_line.set_data(x, sinx)
     k_line.set_data(s.get_k_range(), s.get_k())
     return sin_line, k_line,
 
+
 def animate(i):
     s.evolvt(dt, Nstep)
     sin_line.set_data(s.get_x(), s.get_y())
-    k_line.set_data(s.get_k_range(), 1/N * abs(fftshift(s.get_k())))
+    k_line.set_data(s.get_k_range(), 1 / N * abs(fftshift(s.get_k())))
     return sin_line, k_line,
+
 
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=frames, interval=30, blit=True)
