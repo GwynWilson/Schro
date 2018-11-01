@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.fftpack import fft, ifft
+from scipy.fftpack import fft, ifft, fftfreq, fftshift
 from matplotlib import animation
 
 
@@ -41,20 +41,26 @@ class schrodinger(object):
         self.dt = dt
         for i in range(N_steps):
             self.evolve_x()
-            self.psi_k = fft(self.psi_x)
+            self.psi_k = fftshift(fft(self.psi_x))
             self.evolve_k()
-            self.psi_x = ifft(self.psi_k)
+            self.psi_x = ifft(fftshift(self.psi_k))
         self.t += (N_steps * self.dt)
 
 
 def gauss_init(x, k0, x0=0):
     # initalised gausian wavefunction
-    return np.exp(-((x - x0) ** 2)) * np.exp(-1j * k0 * x)
+    return np.exp(-((x - x0) ** 2)) * np.exp(1j * k0 * x)
 
 
 def V(x):
     # zero potential
     return 0
+"""
+    if x > -20:
+        return 1000
+    else:
+        return 0
+"""
 
 
 def conj(v):
@@ -62,7 +68,7 @@ def conj(v):
 
 
 # Defining x axies
-N = 2 ** 11
+N = 2 ** 10
 dx = 0.1
 a = dx * N
 x = dx * (np.arange(N) - 0.5 * N)
@@ -75,7 +81,7 @@ k0 = - 0.5 * N * dk
 k = k0 + dk * np.arange(N)
 
 # Initial k value
-k_ini = 0
+k_ini = 10
 
 hbar = 1
 m = 1
@@ -83,7 +89,7 @@ m = 1
 # Defining time quantities
 t = 0
 dt = 0.01
-Nstep = 5
+Nstep = 1
 t_max = 120
 frames = int(t_max / float(Nstep * dt))
 
@@ -124,7 +130,6 @@ def animate(i):
     sin_line.set_data(s.x, conj(s.psi_x))
     k_line.set_data(s.k, abs(s.psi_k))
     centre_line.set_data(2 * [x0 + (s.t * (k_ini * hbar / m))], [0, 1])
-#    actual_line.set_data(2 * [x0 + (s.t * (21.5 * hbar / m))], [0, 1])
     potential_line.set_data(x, v_x)
     return sin_line, k_line, centre_line, actual_line,
 
