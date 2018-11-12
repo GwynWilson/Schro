@@ -6,9 +6,16 @@ from matplotlib import animation
 from Schrodinger_Solver import Schrodinger
 
 
+# def gauss_init(x, k0, x0=0, d=1):
+#     # Initalised Gausian Wavefunction
+# #    return (1 / (np.sqrt(2 * np.pi)*d)) * np.exp(-((x - x0) ** 2) / (2 * d ** 2)) * np.exp(1j * k0 * x)
+#     return (1/(2*np.pi)*d) * np.exp(-0.5 * ((x-x0)/(d))**2) * np.exp(1j * k0 * x)
+
+
+
 def gauss_init(x, k0, x0=0, d=1):
-    # Initalised Gausian Wavefunction
-    return 1 / np.sqrt(2 * np.pi * d) * np.exp(-((x - x0) ** 2) / (2 * d)) * np.exp(1j * k0 * x)
+    return ((d * np.sqrt(np.pi)) ** (-0.5)
+            * np.exp(-0.5 * ((x - x0) * 1. / d) ** 2 + 1j * x * k0))
 
 
 # Defining x axis
@@ -20,7 +27,7 @@ x0 = x[int(N / 4)]
 
 # Defining Psi and V
 k_initial = 10
-psi_x = gauss_init(x, k_initial, x0)
+psi_x = gauss_init(x, k_initial, x0,d=2)
 V_x = np.zeros(N)
 
 # Defining K range
@@ -30,7 +37,7 @@ ks = fftshift(k)
 
 # Defining time steps
 t = 0
-dt = 0.1
+dt = 0.01
 step = 10
 
 sch = Schrodinger(x, psi_x, V_x, k)
@@ -82,13 +89,32 @@ t_list = []
 norm_x = []
 expec_x = []
 expec_xs = []
+print(sch.norm_x())
 
-for i in range(10):
-    sch.evolve_t(step, dt)
+plt.plot(sch.x, sch.mod_square_x(True))
+plt.show()
+
+for i in range(100):
+    if i != 0:
+        sch.evolve_t(step, dt)
     t_list.append(sch.t)
     norm_x.append(sch.norm_x() - 1)
     expec_x.append(sch.expectation_x())
-    expec_xs.append(sch.expectation_x_square())
+    expec_xs.append(sch.expectation_x_square() - expec_x[i] ** 2)
 
-plt.plot(t_list, norm_x, linestyle='none', marker='o')
+
+plt.plot(t_list, norm_x, linestyle='none', marker='x')
+plt.xlabel('time')
+plt.ylabel('psi^2 - 1')
 plt.show()
+
+plt.plot(t_list, expec_x)
+plt.xlabel('time')
+plt.ylabel('<x>')
+plt.show()
+
+plt.plot(t_list, expec_xs)
+plt.xlabel('time')
+plt.ylabel('<delta x>')
+plt.show()
+
