@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 from Schrodinger_Solver import Schrodinger
+from Animate import Animate
 
 
 def wave_init(x, sig, x0):
@@ -16,7 +17,7 @@ def harmonic_potential(x, m, omeg, x0):
 
 # Defining x axis
 N = 2 ** 11
-dx = 0.01
+dx = 0.1
 x_length = N * dx
 x = np.linspace(0, x_length, N)
 x0 = int(x_length / 2)
@@ -28,8 +29,9 @@ omega = 0.1
 sigma = np.sqrt(hbar / (2 * m * omega))
 
 # Defining Wavefunction
-psi = wave_init(x, sigma, x0)
+psi = wave_init(x, sigma, x0-2)
 V_x = harmonic_potential(x, m, omega, x0)
+#V_x = np.zeros(N)
 
 # Defining k
 dk = dx / (2 * np.pi)
@@ -43,4 +45,5 @@ step = 10
 
 sch = Schrodinger(x, psi, V_x, k, hbar, m, t)
 
-
+a = Animate(sch, V_x, step, dt, lim1=((x[0], x[N - 1]), (0, max(psi))), lim2=((ks[0], ks[N - 1]), (0, 50)))
+a.make_fig()

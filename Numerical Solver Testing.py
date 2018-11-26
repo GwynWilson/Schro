@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 from Schrodinger_Solver import Schrodinger
+from Animate import Animate
 
 
 def gauss_init(x, k0, x0=0, d=1):
@@ -37,6 +38,13 @@ dt = 0.01
 step = 10
 
 sch = Schrodinger(x, psi_x, V_x, k)
+
+plt.plot(sch.x, sch.mod_square_x(True))
+plt.show()
+
+
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(psi_x))), lim2=((ks[0], ks[N - 1]), (0, 50)))
+a.make_fig()
 
 """
 frames = int(120 / float(step * dt))
@@ -81,6 +89,9 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 plt.show()
 
 """
+
+"""
+
 t_list = []
 norm_x = []
 expec_x = []
@@ -124,3 +135,4 @@ plt.xlabel('Time')
 plt.ylabel('<delta x>')
 plt.savefig('delta_x.png')
 plt.show()
+"""
