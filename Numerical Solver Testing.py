@@ -15,16 +15,22 @@ def x_pos(t, x0, kini, hbar=1, m=1):
     return x0 + t * kini * (hbar / m)
 
 
+def width(t, hbar=1, m=1, sigma=1):
+    return sigma * np.sqrt(1 + (t ** 2) * (hbar / 2 * m * (sigma ** 2)) ** 2)
+
+
 # Defining x axis
-N = 2 ** 11
+N = 2 ** 10
 dx = 0.1
 x_length = N * dx
 x = np.linspace(0, x_length, N)
-x0 = 50
+x0 = int(0.25 * x_length)
+
+d = 1
 
 # Defining Psi and V
 k_initial = 10
-psi_x = gauss_init(x, k_initial, x0, d=1)
+psi_x = gauss_init(x, k_initial, x0, d=d)
 V_x = np.zeros(N)
 
 # Defining K range
@@ -35,73 +41,25 @@ ks = fftshift(k)
 # Defining time steps
 t = 0
 dt = 0.01
-step = 10
+step = 2
 
 sch = Schrodinger(x, psi_x, V_x, k)
 
-plt.plot(sch.x, sch.mod_square_x(True))
+plt.plot(x, sch.mod_square_x(True))
+plt.plot(x, V_x)
+plt.ylim(0, max(psi_x))
 plt.show()
 
 
-a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(psi_x))), lim2=((ks[0], ks[N - 1]), (0, 50)))
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(psi_x))),
+            lim2=((ks[0], ks[N-1]), (0, 30)), title='Free wave packet')
 a.make_fig()
-
-"""
-frames = int(120 / float(step * dt))
-# Plotting
-fig = plt.figure()
-ax1 = fig.add_subplot(211)
-sin_line, = ax1.plot([], [])
-potential_line, = ax1.plot([], [])
-centre_line, = ax1.plot([], [])
-actual_line, = ax1.plot([], [])
-
-ax1.set_xlim(0, x_length)
-ax1.set_ylim(0, 0.2)
-
-ax2 = fig.add_subplot(212)
-k_line, = ax2.plot([], [])
-ax2.set_xlim(ks[0], ks[N - 1])
-ax2.set_ylim(-50, 50)
-
-
-def init():
-    sin_line.set_data(x, sch.mod_square_x(True))
-    k_line.set_data([], [])
-    centre_line.set_data([], [])
-    actual_line.set_data([], [])
-    potential_line.set_data(x, V_x)
-    return sin_line, k_line, centre_line, actual_line,
-
-
-def animate(i):
-    sch.evolve_t(step, dt)
-    sin_line.set_data(sch.x, sch.mod_square_x(True))
-    k_line.set_data(sch.k, abs(sch.psi_k))
-    centre_line.set_data(2 * [x0 + (sch.t * k_initial)], [0, 1])
-    potential_line.set_data(x, V_x)
-#    print(sch.t)
-    return sin_line, k_line, centre_line, actual_line,
-
-
-anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=frames, interval=30, blit=True)
-plt.show()
-
-"""
-
 """
 
 t_list = []
 norm_x = []
 expec_x = []
 expec_xs = []
-print(sch.norm_x())
-
-plt.plot(sch.x, sch.mod_square_x(True))
-plt.xlabel('x')
-plt.ylabel('Psi(x)^2')
-plt.show()
 
 for i in range(100):
     if i != 0:
@@ -109,7 +67,9 @@ for i in range(100):
     t_list.append(sch.t)
     norm_x.append(sch.norm_x() - 1)
     expec_x.append(sch.expectation_x())
-    expec_xs.append(sch.expectation_x_square() - expec_x[i] ** 2)
+    expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
+
+print(sch.t)
 
 plt.plot(t_list, norm_x, linestyle='none', marker='x')
 plt.title('Normalistaion of wavefunction over time')
@@ -118,21 +78,45 @@ plt.ylabel('Normalisation-1')
 plt.savefig('Normalisation.png')
 plt.show()
 
+x_pos_list = [x_pos(j, x0, k_initial) for j in t_list]
+xdiff = [expec_x[n] - x_pos_list[n] for n in range(len(expec_x))]
+print(xdiff)
 
 plt.plot(t_list, expec_x, label='Calculated x')
 plt.plot(t_list, [x_pos(j, x0, k_initial) for j in t_list], linestyle='--', label='Expected x')
 plt.title('Expectation value of x over time')
 plt.xlabel('Time')
-plt.ylabel('<x>')
+plt.ylabel(r'$<x>$')
 plt.legend(loc='best', fancybox=True)
 plt.savefig('Expec_X.png')
 plt.show()
 
+plt.plot(t_list, xdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
+plt.title('Difference between calculated x and expected x')
+plt.xlabel('Time')
+plt.ylabel(r'$x - <x>$')
+plt.legend(loc='best', fancybox=True)
+plt.savefig('Expec_X_diff.png')
+plt.show()
 
-plt.plot(t_list, expec_xs)
+widthx = [width(j, sigma=np.sqrt(d)) for j in t_list]
+widthdiff = [widthx[n] - expec_xs[n] for n in range(len(widthx))]
+
+plt.plot(t_list, expec_xs, label='Calculated width')
+plt.plot(t_list, widthx, linestyle='--', label='Expected width')
+plt.legend(loc='best', fancybox=True)
 plt.title('Width of distribution over time')
 plt.xlabel('Time')
-plt.ylabel('<delta x>')
+plt.ylabel(r'$<\Delta x>$')
 plt.savefig('delta_x.png')
+plt.show()
+
+plt.subplots_adjust(left=0.16)
+plt.plot(t_list, widthdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
+plt.title('Difference between calculated width and expected width')
+plt.xlabel('Time')
+plt.ylabel(r'$\Delta x - <\Delta x>$')
+plt.legend(loc='best', fancybox=True)
+plt.savefig('delta_X_diff.png')
 plt.show()
 """

@@ -29,7 +29,7 @@ class Schrodinger(object):
     def evolve_x(self):
         psi_t = np.zeros(len(self.psi_x), dtype=complex)
         for n, val in enumerate(self.psi_x):
-            psi_t[n] = val * (-np.exp(1j * (self.v[n] * self.dt) / self.hbar))
+            psi_t[n] = val * (np.exp(-1j * (self.v[n] * self.dt) / self.hbar))
         self.psi_x = psi_t
 
     def evolve_k(self):
