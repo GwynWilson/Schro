@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.fftpack import fft, ifft
-from scipy.integrate import trapz
+from scipy.integrate import simps
 
 
 class Schrodinger(object):
@@ -56,14 +56,14 @@ class Schrodinger(object):
 
     def norm_x(self):
         self.mod_square_x()
-        return trapz(self.psi_squared, self.x)
+        return simps(self.psi_squared, self.x)
 
     def expectation_x(self):
         self.mod_square_x()
         y = self.psi_squared * self.x
-        return trapz(y, self.x)
+        return simps(y, self.x)
 
     def expectation_x_square(self):
         self.mod_square_x()
         y = self.psi_squared * self.x * self.x
-        return trapz(y, self.x)
+        return simps(y, self.x)

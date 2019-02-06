@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from scipy.fftpack import fft, ifft, fftfreq, fftshift
 plt.rcParams['animation.ffmpeg_path'] = 'C:\\ffmpeg\\FFmpeg\\bin\\ffmpeg.exe'
 
 class Animate():
@@ -12,7 +13,7 @@ class Animate():
 
         self.step = step
         self.dt = dt
-        self.frames = 260
+        self.frames = 170
 
         self.fig = plt.figure()
         self.fig.subplots_adjust(hspace=0.4)
@@ -53,7 +54,7 @@ class Animate():
         self.line1.set_label('This')
         self.time_text.set_text(f"t = {self.sch.t:.3f}")
         self.potential.set_data(self.sch.x, self.V)
-        self.line2.set_data(self.sch.k, abs(self.sch.psi_k))
+        self.line2.set_data(fftshift(self.sch.k), fftshift(abs(self.sch.psi_k)))
         return self.line1, self.line2, self.potential, self.time_text,
 
     def make_fig(self):
@@ -66,7 +67,6 @@ class Animate():
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
             anim.save(self.title +'.mp4', writer=writer)
-            print('Saved')
         plt.show()
 
 

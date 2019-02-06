@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.fftpack import fft, ifft, fftfreq, fftshift
+from scipy.optimize import curve_fit
+
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
@@ -19,8 +21,12 @@ def width(t, hbar=1, m=1, sigma=1):
     return sigma * np.sqrt(1 + (t ** 2) * (hbar / 2 * m * (sigma ** 2)) ** 2)
 
 
+def func(x, a, b):
+    return a * x + b
+
+
 # Defining x axis
-N = 2 ** 10
+N = 2 ** 11
 dx = 0.1
 x_length = N * dx
 x = np.linspace(0, x_length, N)
@@ -41,18 +47,18 @@ ks = fftshift(k)
 # Defining time steps
 t = 0
 dt = 0.01
-step = 2
+step = 10
 
 sch = Schrodinger(x, psi_x, V_x, k)
 
+"""
 plt.plot(x, sch.mod_square_x(True))
 plt.plot(x, V_x)
-plt.ylim(0, max(psi_x))
+plt.ylim(0, max(np.real(psi_x)))
 plt.show()
 
-
-a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(psi_x))),
-            lim2=((ks[0], ks[N-1]), (0, 30)), title='Free wave packet')
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
+            lim2=((ks[0], ks[N-1]), (0, 30)))
 a.make_fig()
 """
 
@@ -69,7 +75,14 @@ for i in range(100):
     expec_x.append(sch.expectation_x())
     expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
 
-print(sch.t)
+x_pos_list = [x_pos(j, x0, k_initial) for j in t_list]
+xdiff = [np.abs(expec_x[n] - x_pos_list[n]) for n in range(len(expec_x))]
+
+popt1, pcov = curve_fit(func, t_list, x_pos_list)
+print("Expected x :", popt1)
+
+popt2, pcov = curve_fit(func, t_list, expec_x)
+print("Calculated x :", popt2)
 
 plt.plot(t_list, norm_x, linestyle='none', marker='x')
 plt.title('Normalistaion of wavefunction over time')
@@ -78,12 +91,10 @@ plt.ylabel('Normalisation-1')
 plt.savefig('Normalisation.png')
 plt.show()
 
-x_pos_list = [x_pos(j, x0, k_initial) for j in t_list]
-xdiff = [expec_x[n] - x_pos_list[n] for n in range(len(expec_x))]
-print(xdiff)
+
 
 plt.plot(t_list, expec_x, label='Calculated x')
-plt.plot(t_list, [x_pos(j, x0, k_initial) for j in t_list], linestyle='--', label='Expected x')
+plt.plot(t_list, x_pos_list, linestyle='--', label='Expected x')
 plt.title('Expectation value of x over time')
 plt.xlabel('Time')
 plt.ylabel(r'$<x>$')
@@ -100,7 +111,7 @@ plt.savefig('Expec_X_diff.png')
 plt.show()
 
 widthx = [width(j, sigma=np.sqrt(d)) for j in t_list]
-widthdiff = [widthx[n] - expec_xs[n] for n in range(len(widthx))]
+widthdiff = [abs(widthx[n] - expec_xs[n]) for n in range(len(widthx))]
 
 plt.plot(t_list, expec_xs, label='Calculated width')
 plt.plot(t_list, widthx, linestyle='--', label='Expected width')
@@ -119,4 +130,3 @@ plt.ylabel(r'$\Delta x - <\Delta x>$')
 plt.legend(loc='best', fancybox=True)
 plt.savefig('delta_X_diff.png')
 plt.show()
-"""
