@@ -53,7 +53,7 @@ class Animate():
         self.line1.set_data(self.sch.x, self.sch.mod_square_x(True))
         self.line1.set_label('This')
         self.time_text.set_text(f"t = {self.sch.t:.3f}")
-        self.potential.set_data(self.sch.x, self.V)
+        self.potential.set_data(self.sch.x, self.sch.v)
         self.line2.set_data(fftshift(self.sch.k), fftshift(abs(self.sch.psi_k)))
         return self.line1, self.line2, self.potential, self.time_text,
 

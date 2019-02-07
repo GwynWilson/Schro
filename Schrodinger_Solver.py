@@ -4,7 +4,7 @@ from scipy.integrate import simps
 
 
 class Schrodinger(object):
-    def __init__(self, x, psi, v, k, hbar=1, m=1, t=0):
+    def __init__(self, x, psi, v, k, hbar=1, m=1, t=0, args=None):
         # Setting necessary variables
         self.x = x
         self.dx = x[1] - x[0]
@@ -13,20 +13,34 @@ class Schrodinger(object):
 
         self.psi_x = psi
         self.psi_k = fft(psi)
-        self.v = v
         self.psi_squared = self.mod_square_x(r=True)
-
-        self.hbar = hbar
-        self.m = m
+        self.potential = None
 
         self.t = t
         self.dt = None
+
+        if callable(v):
+            self.potential = v
+            self.v = self.potential(self.x, self.t)
+
+        else:
+            self.v = v
+
+        self.hbar = hbar
+        self.m = m
+        self.args = args
 
         self.dk = k[1] - k[0]
         self.k0 = k[0]
         self.k = k
 
     def evolve_x(self):
+        if callable(self.potential):
+            if self.args != None:
+                self.v = self.potential(self.x, self.t, args=self.args)
+            else:
+                self.v = self.potential(self.x, self.t)
+
         psi_t = np.zeros(len(self.psi_x), dtype=complex)
         for n, val in enumerate(self.psi_x):
             psi_t[n] = val * (np.exp(-1j * (self.v[n] * self.dt) / self.hbar))
