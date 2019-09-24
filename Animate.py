@@ -5,15 +5,30 @@ from scipy.fftpack import fft, ifft, fftfreq, fftshift
 plt.rcParams['animation.ffmpeg_path'] = 'C:\\ffmpeg\\FFmpeg\\bin\\ffmpeg.exe'
 
 class Animate():
-
-    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None):
+    """
+    Class that carries out the animating of the wave function evolution
+    """
+    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None):
+        """
+        Initialising the Wave function
+        :param sch: Schrodinger class that the Anminate class will evolve
+        :param V: Potential
+        :param step: Number of steps of evolution to carry out before before
+        :param dt: Time step to do each evolution with
+        :param lim1: Tuple of limits for x space plot
+        :param lim2: Tuple of limits for k space plot
+        :param title: USE TO SAVE ANIMATION. Title of plot to be used to save the animation.
+        """
         self.sch = sch
         self.V = V
         self.title = title
 
         self.step = step
         self.dt = dt
-        self.frames = 170
+        if frames != None:
+            self.frames = frames
+        else:
+            self.frames = 380
 
         self.fig = plt.figure()
         self.fig.subplots_adjust(hspace=0.4)
@@ -21,7 +36,7 @@ class Animate():
         self.line1, = self.ax1.plot([], [], label=r'$|\psi(x)|^2$')
         self.potential, = self.ax1.plot([], [], label=r'$V(x)$')
         self.time_text = self.ax1.text(.7, lim1[1][1]-.1, '', fontsize=10)
-        self.ax1.legend()
+        self.ax1.legend(loc=1)
         self.ax1.set_xlabel('x')
         self.ax1.set_title(title)
 
@@ -53,7 +68,7 @@ class Animate():
         self.line1.set_data(self.sch.x, self.sch.mod_square_x(True))
         self.line1.set_label('This')
         self.time_text.set_text(f"t = {self.sch.t:.3f}")
-        self.potential.set_data(self.sch.x, self.sch.v)
+        self.potential.set_data(self.sch.x, self.sch.v/max(self.sch.v))
         self.line2.set_data(fftshift(self.sch.k), fftshift(abs(self.sch.psi_k)))
         return self.line1, self.line2, self.potential, self.time_text,
 
