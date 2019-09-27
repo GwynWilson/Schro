@@ -10,12 +10,7 @@ from Animate import Animate
 
 
 def gauss_init(x, k0, x0=0, d=1):
-    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (4 * d ** 2)) * np.exp(1j * k0 * x)
-
-
-def gauss_init_pi(x, k0, x0=0, d=1):
-    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (4 * d ** 2)) * np.exp(
-        1j * 2 * np.pi * k0 * x)
+    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (4 * d ** 2)) * np.exp(1j * 2 * np.pi * k0 * x)
 
 
 def x_pos(t, x0, kini, hbar=1, m=1):
@@ -43,21 +38,19 @@ x0 = int(0.25 * x_length)
 d = 1
 
 # Defining Psi and V
-k_initial = 3
+k_initial = 1
 psi_x = gauss_init(x, k_initial, x0, d=d)
 V_x = np.zeros(N)
 
 # Defining K range
-dk = dx / (2 * np.pi)
+dk = dx
 k = fftfreq(N, dk)
 ks = fftshift(k)
 
 # Defining time steps
 t = 0
-dt = 0.01
-step = 10
-Ns = 100
-print("Final time", dt * step * Ns)
+dt = 0.001
+step = 100
 
 hbar = 1
 m = 1
@@ -69,17 +62,14 @@ print("Theoretical Energy", (hbar ** 2 * k_initial ** 2) / (2 * m))
 
 print("Difference :", sch.energy() - (hbar ** 2 * k_initial ** 2) / (2 * m))
 
-# psi_init2 = gauss_init(x, k_initial, x0=x0, d=d)
-# psis2 = np.real(psi_init2 * np.conj(psi_init2))
+plt.plot(x, sch.mod_square_x(True))
+plt.plot(x, V_x)
+plt.ylim(0, max(np.real(psi_x)))
+plt.show()
 
-# plt.plot(x, sch.mod_square_x(True))
-# plt.plot(x, V_x)
-# plt.ylim(0, max(np.real(psi_x)))
-# plt.show()
-#
-# a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
-#             lim2=((ks[0], ks[N-1]), (0, 30)))
-# a.make_fig()
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
+            lim2=((ks[0], ks[N-1]), (0, 30)))
+a.make_fig()
 
 
 t_list = []
@@ -87,7 +77,7 @@ norm_x = []
 expec_x = []
 expec_xs = []
 
-for i in range(Ns):
+for i in range(100):
     if i != 0:
         sch.evolve_t(step, dt)
     t_list.append(sch.t)
@@ -117,7 +107,7 @@ plt.title('Expectation value of x over time')
 plt.xlabel('Time')
 plt.ylabel(r'$<x>$')
 plt.legend(loc='best', fancybox=True)
-plt.savefig('Expec_X_lin.png')
+plt.savefig('Expec_X.png')
 plt.show()
 
 plt.plot(t_list, xdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
@@ -125,7 +115,7 @@ plt.title('Difference between calculated x and expected x')
 plt.xlabel('Time')
 plt.ylabel(r'$x - <x>$')
 plt.legend(loc='best', fancybox=True)
-plt.savefig('Expec_X_diff_lin.png')
+plt.savefig('Expec_X_diff.png')
 plt.show()
 
 widthx = [width(j, sigma=np.sqrt(d), hbar=hbar, m=m) for j in t_list]
@@ -137,7 +127,7 @@ plt.legend(loc='best', fancybox=True)
 plt.title('Width of distribution over time')
 plt.xlabel('Time')
 plt.ylabel(r'$<\Delta x>$')
-plt.savefig('delta_x_lin.png')
+plt.savefig('delta_x.png')
 plt.show()
 
 plt.subplots_adjust(left=0.16)
@@ -146,5 +136,5 @@ plt.title('Difference between calculated width and expected width')
 plt.xlabel('Time')
 plt.ylabel(r'$\Delta x - <\Delta x>$')
 plt.legend(loc='best', fancybox=True)
-plt.savefig('delta_X_diff_lin.png')
+plt.savefig('delta_X_diff.png')
 plt.show()
