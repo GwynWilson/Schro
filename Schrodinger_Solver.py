@@ -10,7 +10,7 @@ class Schrodinger(object):
     as well as k and x points) and various functions to both carry out the evolution and return calculated variables.
     """
 
-    def __init__(self, x, psi, v, k, hbar=1, m=1, t=0, args=None, pi=None):
+    def __init__(self, x, psi, v, k=None, hbar=1, m=1, t=0, args=None, pi=None):
         """
         :param x: Array of the x points
         :param psi: Initial Wavefunction in x space
@@ -26,9 +26,11 @@ class Schrodinger(object):
         self.x = x
         self.dx = x[1] - x[0]
         self.N = len(x)
+        self.x_length = self.N * self.dx
 
         self.psi_x = psi
         self.psi_k = fft(psi)
+        self.normalise_x()
         self.psi_squared = self.mod_square_x(r=True)
         self.potential = None
 
@@ -117,12 +119,24 @@ class Schrodinger(object):
         if r == True:
             return self.psi_squared
 
+    def mod_square_k(self, r=False):
+        """
+        Function that will give the mod square of the wave function in k space
+        :param r: Will return the mod square of the wave function as an array, set to not do this by default
+        :return: Returns if r= True
+        """
+
+        self.psi_squared_k = np.real(self.psi_k * np.conj(self.psi_k))
+
+        if r == True:
+            return self.psi_squared_k
+
     def normalise_k(self):
         """
         Function normalising the wave function in k space
         :return: Returns the normalised wave function in k space
         """
-        k_s = np.real(self.psi_k * np.conj(self.psi_k))
+        k_s = self.mod_square_k(r=True)
         norm = simps(k_s, self.k)
         self.psi_k = self.psi_k / np.sqrt(norm)
         return self.psi_k
@@ -152,6 +166,10 @@ class Schrodinger(object):
         self.mod_square_x()
         y = self.psi_squared * self.x
         return simps(y, self.x)
+
+    def expectation_k(self):
+        self.mod_square_k
+        return simps(self.psi_squared_k*self.k,k)
 
     def expectation_x_square(self):
         """

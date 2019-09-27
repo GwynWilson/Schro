@@ -2,12 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.fftpack import fft, ifft, fftfreq, fftshift
+
 plt.rcParams['animation.ffmpeg_path'] = 'C:\\ffmpeg\\FFmpeg\\bin\\ffmpeg.exe'
+
 
 class Animate():
     """
     Class that carries out the animating of the wave function evolution
     """
+
     def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None):
         """
         Initialising the Wave function
@@ -35,7 +38,7 @@ class Animate():
         self.ax1 = self.fig.add_subplot(211)
         self.line1, = self.ax1.plot([], [], label=r'$|\psi(x)|^2$')
         self.potential, = self.ax1.plot([], [], label=r'$V(x)$')
-        self.time_text = self.ax1.text(.7, lim1[1][1]-.1, '', fontsize=10)
+        self.time_text = self.ax1.text(.7, .9, '', fontsize=10)
         self.ax1.legend(loc=1)
         self.ax1.set_xlabel('x')
         self.ax1.set_title(title)
@@ -46,10 +49,22 @@ class Animate():
         self.ax2.set_xlabel('k')
 
         if (lim1 != None):
+            self.time_text = self.ax1.text(.7, lim1[1][1] - .1, '', fontsize=10)
+            self.ax1.set_xlim(lim1[0])
+            self.ax1.set_ylim(lim1[1])
+
+        else:
+            lim1 = ((0, self.sch.x_length), (0, max(np.real(self.sch.psi_squared))))
+            self.time_text = self.ax1.text(.7, lim1[1][1] - .1, '', fontsize=10)
             self.ax1.set_xlim(lim1[0])
             self.ax1.set_ylim(lim1[1])
 
         if (lim2 != None):
+            self.ax2.set_xlim(lim2[0])
+            self.ax2.set_ylim(lim2[1])
+
+        else:
+            lim2 = ((min(self.sch.k), max(self.sch.k)), (0, 1))
             self.ax2.set_xlim(lim2[0])
             self.ax2.set_ylim(lim2[1])
 
@@ -68,7 +83,8 @@ class Animate():
         self.line1.set_data(self.sch.x, self.sch.mod_square_x(True))
         self.line1.set_label('This')
         self.time_text.set_text(f"t = {self.sch.t:.3f}")
-        self.potential.set_data(self.sch.x, self.sch.v/max(self.sch.v))
+        # self.potential.set_data(self.sch.x, self.sch.v / max(self.sch.v))
+        self.potential.set_data(self.sch.x, self.sch.v)
         self.line2.set_data(fftshift(self.sch.k), fftshift(abs(self.sch.psi_k)))
         return self.line1, self.line2, self.potential, self.time_text,
 
@@ -78,10 +94,10 @@ class Animate():
         anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init,
                                        frames=self.frames, interval=30, blit=True)
 
-        if self.title!=None:
+        if self.title != None:
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
-            anim.save(self.title +'.mp4', writer=writer)
+            anim.save(self.title + '.mp4', writer=writer)
         plt.show()
 
 
