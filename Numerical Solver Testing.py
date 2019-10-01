@@ -69,8 +69,8 @@ print("Theoretical Energy", (hbar ** 2 * k_initial ** 2) / (2 * m))
 
 print("Difference :", sch.energy() - (hbar ** 2 * k_initial ** 2) / (2 * m))
 
-# psi_init2 = gauss_init(x, k_initial, x0=x0, d=d)
-# psis2 = np.real(psi_init2 * np.conj(psi_init2))
+psi_init2 = gauss_init(x, k_initial, x0=x0, d=d)
+psis2 = np.real(psi_init2 * np.conj(psi_init2))
 
 # plt.plot(x, sch.mod_square_x(True))
 # plt.plot(x, V_x)
@@ -98,19 +98,19 @@ for i in range(Ns):
 x_pos_list = [x_pos(j, x0, k_initial, hbar=hbar, m=m) for j in t_list]
 xdiff = [np.abs(expec_x[n] - x_pos_list[n]) for n in range(len(expec_x))]
 
-popt1, pcov = curve_fit(func, t_list, x_pos_list)
-print("Expected x :", popt1)
-
-popt2, pcov = curve_fit(func, t_list, expec_x)
-print("Calculated x :", popt2)
-
-plt.plot(t_list, norm_x, linestyle='none', marker='x')
-plt.title('Normalistaion of wavefunction over time')
-plt.xlabel('Time')
-plt.ylabel('Normalisation-1')
-plt.savefig('Normalisation.png')
-plt.show()
-
+# popt1, pcov = curve_fit(func, t_list, x_pos_list)
+# print("Expected x :", popt1)
+#
+# popt2, pcov = curve_fit(func, t_list, expec_x)
+# print("Calculated x :", popt2)
+#
+# plt.plot(t_list, norm_x, linestyle='none', marker='x')
+# plt.title('Normalistaion of wavefunction over time')
+# plt.xlabel('Time')
+# plt.ylabel('Normalisation-1')
+# plt.savefig('Normalisation.png')
+# plt.show()
+#
 plt.plot(t_list, expec_x, label='Calculated x')
 plt.plot(t_list, x_pos_list, linestyle='--', label='Expected x')
 plt.title('Expectation value of x over time')
@@ -127,24 +127,24 @@ plt.ylabel(r'$x - <x>$')
 plt.legend(loc='best', fancybox=True)
 plt.savefig('Expec_X_diff_lin.png')
 plt.show()
-
-widthx = [width(j, sigma=np.sqrt(d), hbar=hbar, m=m) for j in t_list]
-widthdiff = [abs(widthx[n] - expec_xs[n]) for n in range(len(widthx))]
-
-plt.plot(t_list, expec_xs, label='Calculated width')
-plt.plot(t_list, widthx, linestyle='--', label='Expected width')
-plt.legend(loc='best', fancybox=True)
-plt.title('Width of distribution over time')
-plt.xlabel('Time')
-plt.ylabel(r'$<\Delta x>$')
-plt.savefig('delta_x_lin.png')
-plt.show()
-
-plt.subplots_adjust(left=0.16)
-plt.plot(t_list, widthdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
-plt.title('Difference between calculated width and expected width')
-plt.xlabel('Time')
-plt.ylabel(r'$\Delta x - <\Delta x>$')
-plt.legend(loc='best', fancybox=True)
-plt.savefig('delta_X_diff_lin.png')
-plt.show()
+#
+# widthx = [width(j, sigma=np.sqrt(d), hbar=hbar, m=m) for j in t_list]
+# widthdiff = [abs(widthx[n] - expec_xs[n]) for n in range(len(widthx))]
+#
+# plt.plot(t_list, expec_xs, label='Calculated width')
+# plt.plot(t_list, widthx, linestyle='--', label='Expected width')
+# plt.legend(loc='best', fancybox=True)
+# plt.title('Width of distribution over time')
+# plt.xlabel('Time')
+# plt.ylabel(r'$<\Delta x>$')
+# plt.savefig('delta_x_lin.png')
+# plt.show()
+#
+# plt.subplots_adjust(left=0.16)
+# plt.plot(t_list, widthdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
+# plt.title('Difference between calculated width and expected width')
+# plt.xlabel('Time')
+# plt.ylabel(r'$\Delta x - <\Delta x>$')
+# plt.legend(loc='best', fancybox=True)
+# plt.savefig('delta_X_diff_lin.png')
+# plt.show()

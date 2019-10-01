@@ -19,6 +19,12 @@ def t_theory2(L, V0, E, m=1, hbar=1):
     k2 = np.sqrt(((2 * m) / (hbar ** 2)) * (V0 - E))
     return (1 + 1 / 4 * (k1 / k2 + k2 / k1) ** 2 * np.sinh(k2 * L) ** 2) ** (-1)
 
+# def t_theory3(L, V0, E, m=1, hbar=1):
+#     k1 = np.sqrt(((2 * m * E) / hbar ** 2))
+#     k2 = np.sqrt(((2 * m) / (hbar ** 2)) * (V0 - E))
+#     return ((16*k1**2 * k2**2 * np.exp(-2j * k1*L))/
+#             (((k1+k2)**2 * np.exp(-1j*k2*L) - (k1-k2)**2 * np.exp(1j*k2*L))**2 +))**2
+
 
 def gauss_init(x, k0, x0=0, d=1):
     return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (d ** 2)) * np.exp(1j * k0 * x)
@@ -112,9 +118,9 @@ print("kdx", k_init * dx)
 sch = Schrodinger(x, psi_init, V_x, k, hbar=hbar, m=m, t=t)
 
 E = (hbar ** 2) * (k_init ** 2) / (2 * m)
-# print("Energy", E)
-# print("Energy_sim", sch.energy())
-# print("Lenght", L)
+print("Energy", E)
+print("Energy_sim", sch.energy())
+print("Lenght", L)
 # print("Theory", t_theory(L, A, E))
 
 ################### Testing

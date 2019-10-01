@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.fftpack import fft, ifft, fftfreq, fftshift
+from scipy.fftpack import fft, ifft, fftfreq, fftshift, ifftshift
 from scipy.integrate import simps, trapz
 import matplotlib.pyplot as plt
 
@@ -58,6 +58,10 @@ class Schrodinger(object):
             self.k = fftfreq(self.N, self.dx)
         else:
             self.k = fftfreq(self.N, self.dx / (2 * np.pi))
+
+        k_lim = np.pi / self.dx
+        self.k1 = -k_lim + (2 * k_lim / self.N) * np.arange(self.N)
+        self.k = ifftshift(self.k1)
 
     def evolve_x(self):
         """
@@ -169,7 +173,7 @@ class Schrodinger(object):
 
     def expectation_k(self):
         self.mod_square_k
-        return simps(self.psi_squared_k*self.k,k)
+        return simps(self.psi_squared_k * self.k, self.k)
 
     def expectation_x_square(self):
         """
@@ -207,6 +211,17 @@ class Schrodinger(object):
         norm = simps(k_s, self.k)
         k_s = k_s / norm
 
+        tempk = self.k
+        temps = k_s
+        print(tempk)
+        np.insert(tempk,0,-1)
+        print(tempk)
+        np.append(temps,k_s[0])
+
+
+        plt.plot(tempk, temps)
+        plt.show()
         k_sp = k_s * ((self.hbar ** 2) / (2 * self.m)) * (np.asarray(self.k) ** 2)
         k_e = simps(k_sp, self.k)  # Energy from potential in k space
+
         return x_e + k_e
