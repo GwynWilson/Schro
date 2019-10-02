@@ -211,16 +211,6 @@ class Schrodinger(object):
         norm = simps(k_s, self.k)
         k_s = k_s / norm
 
-        tempk = self.k
-        temps = k_s
-        print(tempk)
-        np.insert(tempk,0,-1)
-        print(tempk)
-        np.append(temps,k_s[0])
-
-
-        plt.plot(tempk, temps)
-        plt.show()
         k_sp = k_s * ((self.hbar ** 2) / (2 * self.m)) * (np.asarray(self.k) ** 2)
         k_e = simps(k_sp, self.k)  # Energy from potential in k space
 

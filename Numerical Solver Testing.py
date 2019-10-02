@@ -43,7 +43,7 @@ x0 = int(0.25 * x_length)
 d = 1
 
 # Defining Psi and V
-k_initial = 3
+k_initial = 2
 psi_x = gauss_init(x, k_initial, x0, d=d)
 V_x = np.zeros(N)
 
@@ -72,31 +72,31 @@ print("Difference :", sch.energy() - (hbar ** 2 * k_initial ** 2) / (2 * m))
 psi_init2 = gauss_init(x, k_initial, x0=x0, d=d)
 psis2 = np.real(psi_init2 * np.conj(psi_init2))
 
-# plt.plot(x, sch.mod_square_x(True))
-# plt.plot(x, V_x)
-# plt.ylim(0, max(np.real(psi_x)))
-# plt.show()
+plt.plot(x, sch.mod_square_x(True))
+plt.plot(x, V_x)
+plt.ylim(0, max(np.real(psi_x)))
+plt.show()
+
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
+            lim2=((ks[0], ks[N-1]), (0, 30)))
+a.make_fig()
+
+
+# t_list = []
+# norm_x = []
+# expec_x = []
+# expec_xs = []
 #
-# a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
-#             lim2=((ks[0], ks[N-1]), (0, 30)))
-# a.make_fig()
-
-
-t_list = []
-norm_x = []
-expec_x = []
-expec_xs = []
-
-for i in range(Ns):
-    if i != 0:
-        sch.evolve_t(step, dt)
-    t_list.append(sch.t)
-    norm_x.append(sch.norm_x() - 1)
-    expec_x.append(sch.expectation_x())
-    expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
-
-x_pos_list = [x_pos(j, x0, k_initial, hbar=hbar, m=m) for j in t_list]
-xdiff = [np.abs(expec_x[n] - x_pos_list[n]) for n in range(len(expec_x))]
+# for i in range(Ns):
+#     if i != 0:
+#         sch.evolve_t(step, dt)
+#     t_list.append(sch.t)
+#     norm_x.append(sch.norm_x() - 1)
+#     expec_x.append(sch.expectation_x())
+#     expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
+#
+# x_pos_list = [x_pos(j, x0, k_initial, hbar=hbar, m=m) for j in t_list]
+# xdiff = [np.abs(expec_x[n] - x_pos_list[n]) for n in range(len(expec_x))]
 
 # popt1, pcov = curve_fit(func, t_list, x_pos_list)
 # print("Expected x :", popt1)
