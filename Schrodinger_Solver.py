@@ -29,7 +29,7 @@ class Schrodinger(object):
         self.x_length = self.N * self.dx
 
         self.psi_x = psi
-        self.psi_k = fft(psi)
+        self.psi_k = fftshift(fft(psi))
         self.normalise_x()
         self.psi_squared = self.mod_square_x(r=True)
         self.potential = None
@@ -61,7 +61,7 @@ class Schrodinger(object):
 
         k_lim = np.pi / self.dx
         self.k1 = -k_lim + (2 * k_lim / self.N) * np.arange(self.N)
-        self.k = ifftshift(self.k1)
+        self.k = self.k1
 
     def evolve_x(self):
         """
@@ -77,7 +77,7 @@ class Schrodinger(object):
                 self.v = self.potential(self.x, self.t)
 
         # Evolving the wave function
-        self.psi_x = self.psi_x * np.exp(-1j * np.asarray(self.v) * self.dt / self.hbar)
+        self.psi_x = self.psi_x * np.exp(-1j * (np.asarray(self.v) * self.dt) / self.hbar)
 
     def evolve_k(self):
         """
@@ -91,7 +91,7 @@ class Schrodinger(object):
         else:
             # self.psi_k = self.psi_k * (np.exp(-0.5j * (self.hbar * (np.asarray(self.k) ** 2) * self.dt) / self.m))
             self.psi_k = self.psi_k * (
-                np.exp(-0.5j * (self.hbar * (np.asarray(self.k) * np.asarray(self.k)) * self.dt) / self.m))
+                np.exp(-1j * (self.hbar * (np.asarray(self.k) ** 2) * self.dt) / (2 * self.m)))
 
     def evolve_t(self, N_steps=1, dt=0.1):
         """
@@ -103,10 +103,10 @@ class Schrodinger(object):
         self.dt = dt
         for i in range(N_steps):
             self.evolve_x()
-            self.psi_k = fft(self.psi_x)
+            self.psi_k = fftshift(fft(self.psi_x))
             self.psi_k = self.normalise_k()
             self.evolve_k()
-            self.psi_x = ifft(self.psi_k)
+            self.psi_x = ifft(fftshift(self.psi_k))
             self.psi_x = self.normalise_x()
 
         self.t += (N_steps * self.dt)
@@ -143,6 +143,7 @@ class Schrodinger(object):
         k_s = self.mod_square_k(r=True)
         norm = simps(k_s, self.k)
         self.psi_k = self.psi_k / np.sqrt(norm)
+        self.mod_square_k()
         return self.psi_k
 
     def normalise_x(self):
@@ -153,6 +154,7 @@ class Schrodinger(object):
         x_s = self.mod_square_x(r=True)  # Getting the mod square of the wave function
         norm = simps(x_s, self.x)
         self.psi_x = self.psi_x / np.sqrt(norm)
+        self.mod_square_x()
         return self.psi_x
 
     def norm_x(self):
@@ -203,15 +205,15 @@ class Schrodinger(object):
         """
 
         self.normalise_x()
-        self.mod_square_x()
         x_sp = self.psi_squared * np.asarray(self.v)
         x_e = simps(x_sp, self.x)  # Energy from potential in x space
 
-        k_s = np.real(self.psi_k * np.conj(self.psi_k))
-        norm = simps(k_s, self.k)
-        k_s = k_s / norm
-
-        k_sp = k_s * ((self.hbar ** 2) / (2 * self.m)) * (np.asarray(self.k) ** 2)
+        self.normalise_k()
+        # plt.plot(self.k,(np.asarray(self.k) ** 2))
+        # plt.show()
+        k_sp = self.psi_squared_k * ((self.hbar ** 2) / (2 * self.m)) * (np.asarray(self.k) ** 2)
+        # plt.plot(self.k, k_sp)
+        # plt.show()
         k_e = simps(k_sp, self.k)  # Energy from potential in k space
 
         return x_e + k_e

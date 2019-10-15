@@ -72,29 +72,31 @@ print("Difference :", sch.energy() - (hbar ** 2 * k_initial ** 2) / (2 * m))
 psi_init2 = gauss_init(x, k_initial, x0=x0, d=d)
 psis2 = np.real(psi_init2 * np.conj(psi_init2))
 
-plt.plot(x, sch.mod_square_x(True))
-plt.plot(x, V_x)
-plt.ylim(0, max(np.real(psi_x)))
-plt.show()
-
-a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
-            lim2=((ks[0], ks[N-1]), (0, 30)))
-a.make_fig()
-
-
-# t_list = []
-# norm_x = []
-# expec_x = []
-# expec_xs = []
+# plt.plot(x, sch.mod_square_x(True))
+# plt.plot(x, V_x)
+# plt.ylim(0, max(np.real(psi_x)))
+# plt.show()
 #
-# for i in range(Ns):
-#     if i != 0:
-#         sch.evolve_t(step, dt)
-#     t_list.append(sch.t)
-#     norm_x.append(sch.norm_x() - 1)
-#     expec_x.append(sch.expectation_x())
-#     expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
-#
+# a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
+#             lim2=((ks[0], ks[N-1]), (0, 30)))
+# a.make_fig()
+
+
+t_list = []
+norm_x = []
+expec_x = []
+expec_xs = []
+expec_k = []
+
+for i in range(Ns):
+    if i != 0:
+        sch.evolve_t(step, dt)
+    t_list.append(sch.t)
+    norm_x.append(sch.norm_x() - 1)
+    expec_x.append(sch.expectation_x())
+    expec_xs.append(np.sqrt(sch.expectation_x_square() - expec_x[i] ** 2))
+    expec_k.append(sch.expectation_k())
+
 # x_pos_list = [x_pos(j, x0, k_initial, hbar=hbar, m=m) for j in t_list]
 # xdiff = [np.abs(expec_x[n] - x_pos_list[n]) for n in range(len(expec_x))]
 
@@ -111,22 +113,22 @@ a.make_fig()
 # plt.savefig('Normalisation.png')
 # plt.show()
 #
-plt.plot(t_list, expec_x, label='Calculated x')
-plt.plot(t_list, x_pos_list, linestyle='--', label='Expected x')
-plt.title('Expectation value of x over time')
-plt.xlabel('Time')
-plt.ylabel(r'$<x>$')
-plt.legend(loc='best', fancybox=True)
-plt.savefig('Expec_X_lin.png')
-plt.show()
-
-plt.plot(t_list, xdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
-plt.title('Difference between calculated x and expected x')
-plt.xlabel('Time')
-plt.ylabel(r'$x - <x>$')
-plt.legend(loc='best', fancybox=True)
-plt.savefig('Expec_X_diff_lin.png')
-plt.show()
+# plt.plot(t_list, expec_x, label='Calculated x')
+# plt.plot(t_list, x_pos_list, linestyle='--', label='Expected x')
+# plt.title('Expectation value of x over time')
+# plt.xlabel('Time')
+# plt.ylabel(r'$<x>$')
+# plt.legend(loc='best', fancybox=True)
+# plt.savefig('Expec_X_lin.png')
+# plt.show()
+#
+# plt.plot(t_list, xdiff, linestyle='none', marker='o', markersize=1, label='Difference in x')
+# plt.title('Difference between calculated x and expected x')
+# plt.xlabel('Time')
+# plt.ylabel(r'$x - <x>$')
+# plt.legend(loc='best', fancybox=True)
+# plt.savefig('Expec_X_diff_lin.png')
+# plt.show()
 #
 # widthx = [width(j, sigma=np.sqrt(d), hbar=hbar, m=m) for j in t_list]
 # widthdiff = [abs(widthx[n] - expec_xs[n]) for n in range(len(widthx))]
@@ -148,3 +150,15 @@ plt.show()
 # plt.legend(loc='best', fancybox=True)
 # plt.savefig('delta_X_diff_lin.png')
 # plt.show()
+
+kt = [k_initial for i in t_list]
+k_diff = [expec_k[i] - kt[i] for i in range(len(t_list))]
+plt.figure()
+plt.plot(t_list, expec_k, label="Expectation K")
+plt.plot(t_list, [k_initial for i in t_list], label="Theoretical k", linestyle="--")
+plt.legend()
+plt.show()
+
+plt.figure()
+plt.plot(t_list, k_diff, linestyle='none', marker='o', markersize=1)
+plt.show()

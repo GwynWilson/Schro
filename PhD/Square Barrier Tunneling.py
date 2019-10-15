@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 def gauss_init(x, k0, x0=0, d=1):
-    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (d ** 2)) * np.exp(1j * k0 * x)
+    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-((x - x0) ** 2) / (d ** 2)) * np.exp(1j * k0 * x)
 
 
 def barrier(x, A, x1, x2):
@@ -70,17 +70,19 @@ x = np.array([i * dx for i in range(N)])
 hbar = 1
 m = 1
 
-bar_amp = 60
-L = int(N / 1000)
+k0 = 2
+x0 = int(N / 4) * dx
+sig = 8
+
+bar_amp = 3
+L = int(7/k0)
 x1 = N / 2 * dx
 x2 = x1 + L * dx
 
 ks = np.fft.fftfreq(N, dx / 2 * np.pi)
 dk = -ks[0] + ks[1]
 
-k0 = 10
-x0 = int(N / 4) * dx
-sig = 2
+
 
 Psi_x = gauss_init(x, k0, x0=x0, d=sig)
 
@@ -93,7 +95,7 @@ sch = Schrodinger(x, Psi_x, V_x, hbar=hbar, m=m, args=x1)
 dt = 0.01
 step = 50
 
-finalt = 8
+finalt = 40
 
 c = Constants(bar_amp, dt, dx, k0)
 
@@ -109,7 +111,7 @@ print("V0", bar_amp)
 # a = Animate(sch, V_x, step, dt)
 # a.make_fig()
 
-v_list = np.linspace(40, 60, 20)
+v_list = np.arange(1, 3, 0.25)
 T_list = []
 T2_list = []
 for i in v_list:

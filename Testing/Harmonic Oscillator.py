@@ -57,9 +57,9 @@ V = harmonic_potential(x, x0, m=m, w=omega)
 
 sch = Schrodinger(x, psi_init, V, k, hbar=hbar, m=m)
 
-a = Animate(sch, V, step, dt, lim1=((-x_length/4, x_length/4), (0, max(np.real(psi_init)))),
-            lim2=((ks[0], ks[N - 1]), (0, 1)), frames=Ns)
-a.make_fig()
+# a = Animate(sch, V, step, dt, lim1=((-x_length/4, x_length/4), (0, max(np.real(psi_init)))),
+#             lim2=((ks[0], ks[N - 1]), (0, 1)), frames=Ns)
+# a.make_fig()
 
 t_list = []
 expec_x = []

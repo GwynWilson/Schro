@@ -19,6 +19,7 @@ def t_theory2(L, V0, E, m=1, hbar=1):
     k2 = np.sqrt(((2 * m) / (hbar ** 2)) * (V0 - E))
     return (1 + 1 / 4 * (k1 / k2 + k2 / k1) ** 2 * np.sinh(k2 * L) ** 2) ** (-1)
 
+
 # def t_theory3(L, V0, E, m=1, hbar=1):
 #     k1 = np.sqrt(((2 * m * E) / hbar ** 2))
 #     k2 = np.sqrt(((2 * m) / (hbar ** 2)) * (V0 - E))
@@ -71,8 +72,8 @@ def run(x2, time=False):
 
 
 # Defining x axis
-N = 2 ** 12
-dx = 0.02
+N = 2 ** 11
+dx = 0.1
 x_length = N * dx
 
 x = np.zeros(N)
@@ -83,9 +84,9 @@ hbar = 1
 m = 1
 
 # Barrier Definitions
-A = 60
+A = 3
 x1 = int(0.5 * N) * dx
-L = 10 * dx
+L = 20 * dx
 x2 = x1 + L
 V_x = barrier(x, A, x1, x2)
 
@@ -96,19 +97,21 @@ V_x = barrier(x, A, x1, x2)
 
 # Wave Function definitions
 x0 = int(0.3 * x_length)
-sig = 6
+sig = 8
 k_init = 2
 psi_init = gauss_init(x, k_init, x0=x0, d=sig)
 
-#Defining K Space
+# Defining K Space
 dk = dx / (2 * np.pi)
 k = fftfreq(N, dk)
 ks = fftshift(k)
 
 t = 0
-dt = 0.001
+dt = 0.01
 step = 50
-Ns = 380
+ft = 34
+
+Ns = int(ft / (dt * step))
 
 print(dt * Ns * step)
 
@@ -117,11 +120,18 @@ print("vdt", A * dt)
 print("kdx", k_init * dx)
 sch = Schrodinger(x, psi_init, V_x, k, hbar=hbar, m=m, t=t)
 
-E = (hbar ** 2) * (k_init ** 2) / (2 * m)
+E = (hbar ** 2) * (k_init ** 2 + 1/(4*sig**2)) / (2 * m)
 print("Energy", E)
 print("Energy_sim", sch.energy())
 print("Lenght", L)
 # print("Theory", t_theory(L, A, E))
+
+# plt.plot(x, sch.psi_squared)
+# plt.plot(x, V_x)
+# plt.show()
+#
+# a = Animate(sch, V_x, step, dt)
+# a.make_fig()
 
 ################### Testing
 t_list = []
@@ -130,12 +140,15 @@ for i in range(0, Ns):
     t_list.append(t)
 t = 0
 
-L_list = range(1, 20, 2)
+start = 5
+stop = 20
+
+L_list = range(start, stop + 1, 1)
 Tunnel_Val = []
 T1_val = []
 T2_val = []
 
-L_list1 = np.linspace(1, 20, 100)
+L_list1 = np.linspace(start, stop, 100)
 
 figure = plt.figure()
 ax = figure.add_subplot(1, 1, 1)
@@ -169,6 +182,7 @@ plt.plot(L_list1, theory2, label="Sinh Theory")
 plt.legend()
 plt.savefig('Tunneling Stuff 2')
 plt.show()
+
 
 # ################# Initial
 # plt.plot(x, sch.mod_square_x(True))
