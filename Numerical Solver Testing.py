@@ -76,10 +76,10 @@ psis2 = np.real(psi_init2 * np.conj(psi_init2))
 # plt.plot(x, V_x)
 # plt.ylim(0, max(np.real(psi_x)))
 # plt.show()
-#
-# a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
-#             lim2=((ks[0], ks[N-1]), (0, 30)))
-# a.make_fig()
+
+a = Animate(sch, V_x, step, dt, lim1=((0, x_length), (0, max(np.real(psi_x)))),
+            lim2=((ks[0], ks[N-1]), (0, 30)))
+a.make_fig()
 
 
 t_list = []
@@ -151,14 +151,14 @@ for i in range(Ns):
 # plt.savefig('delta_X_diff_lin.png')
 # plt.show()
 
-kt = [k_initial for i in t_list]
-k_diff = [expec_k[i] - kt[i] for i in range(len(t_list))]
-plt.figure()
-plt.plot(t_list, expec_k, label="Expectation K")
-plt.plot(t_list, [k_initial for i in t_list], label="Theoretical k", linestyle="--")
-plt.legend()
-plt.show()
-
-plt.figure()
-plt.plot(t_list, k_diff, linestyle='none', marker='o', markersize=1)
-plt.show()
+# kt = [k_initial for i in t_list]
+# k_diff = [expec_k[i] - kt[i] for i in range(len(t_list))]
+# plt.figure()
+# plt.plot(t_list, expec_k, label="Expectation K")
+# plt.plot(t_list, [k_initial for i in t_list], label="Theoretical k", linestyle="--")
+# plt.legend()
+# plt.show()
+#
+# plt.figure()
+# plt.plot(t_list, k_diff, linestyle='none', marker='o', markersize=1)
+# plt.show()

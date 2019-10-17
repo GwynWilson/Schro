@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.fftpack import fft, ifft, fftfreq, fftshift, ifftshift
+# from scipy.fftpack import fft, ifft, fftfreq, fftshift, ifftshift
+from numpy.fft import fft, ifft, fftfreq, fftshift, ifftshift
 from scipy.integrate import simps, trapz
 import matplotlib.pyplot as plt
 
@@ -103,11 +104,11 @@ class Schrodinger(object):
         self.dt = dt
         for i in range(N_steps):
             self.evolve_x()
-            self.psi_k = fftshift(fft(self.psi_x))
-            self.psi_k = self.normalise_k()
+            self.psi_k = fftshift(fft(self.psi_x,norm="ortho"))
+            # self.psi_k = self.normalise_k()
             self.evolve_k()
-            self.psi_x = ifft(fftshift(self.psi_k))
-            self.psi_x = self.normalise_x()
+            self.psi_x = ifft(fftshift(self.psi_k),norm="ortho")
+            # self.psi_x = self.normalise_x()
 
         self.t += (N_steps * self.dt)
 

@@ -74,15 +74,13 @@ k0 = 2
 x0 = int(N / 4) * dx
 sig = 8
 
-bar_amp = 3
-L = int(7/k0)
+bar_amp = 11
+L = 10
 x1 = N / 2 * dx
 x2 = x1 + L * dx
 
 ks = np.fft.fftfreq(N, dx / 2 * np.pi)
 dk = -ks[0] + ks[1]
-
-
 
 Psi_x = gauss_init(x, k0, x0=x0, d=sig)
 
@@ -104,22 +102,22 @@ print("Energy", E)
 print("Energy_sim", sch.energy())
 print("V0", bar_amp)
 
-# plt.plot(x, sch.psi_squared)
-# plt.plot(x,V_x)
-# plt.show()
-
-# a = Animate(sch, V_x, step, dt)
-# a.make_fig()
-
-v_list = np.arange(1, 3, 0.25)
-T_list = []
-T2_list = []
-for i in v_list:
-    print("Run", i)
-    T_list.append(run(i))
-    T2_list.append(t_theory2(L, i, E, m=m, hbar=hbar))
-
-plt.plot(v_list, T_list, label="Sim")
-plt.plot(v_list, T2_list, label="Theory")
-plt.legend()
+plt.plot(x, sch.psi_squared)
+plt.plot(x, V_x)
 plt.show()
+
+a = Animate(sch, V_x, step, dt)
+a.make_fig()
+
+# v_list = np.arange(1, 3, 0.25)
+# T_list = []
+# T2_list = []
+# for i in v_list:
+#     print("Run", i)
+#     T_list.append(run(i))
+#     T2_list.append(t_theory2(L, i, E, m=m, hbar=hbar))
+#
+# plt.plot(v_list, T_list, label="Sim")
+# plt.plot(v_list, T2_list, label="Theory")
+# plt.legend()
+# plt.show()
