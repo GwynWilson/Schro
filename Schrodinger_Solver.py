@@ -104,10 +104,10 @@ class Schrodinger(object):
         self.dt = dt
         for i in range(N_steps):
             self.evolve_x()
-            self.psi_k = fftshift(fft(self.psi_x,norm="ortho"))
+            self.psi_k = fftshift(fft(self.psi_x, norm="ortho"))
             # self.psi_k = self.normalise_k()
             self.evolve_k()
-            self.psi_x = ifft(fftshift(self.psi_k),norm="ortho")
+            self.psi_x = ifft(fftshift(self.psi_k), norm="ortho")
             # self.psi_x = self.normalise_x()
 
         self.t += (N_steps * self.dt)
@@ -218,3 +218,29 @@ class Schrodinger(object):
         k_e = simps(k_sp, self.k)  # Energy from potential in k space
 
         return x_e + k_e
+
+    def x_width(self):
+        exs = self.expectation_x_square()
+        ex = self.expectation_x()
+        return np.sqrt(exs-ex**2)
+
+
+    def theoreticalEnergy(self):
+        return 0
+
+    def impedence(self):
+        E = self.energy()
+        # if E < max(self.v):
+        #     return 0
+        for n, i in enumerate(reversed(self.v)):
+            K = 1j * np.sqrt(2 * self.m * (E - i)) / self.hbar
+            z0 = -1j * self.hbar * K / self.m
+            if n == 0:
+                zload = z0
+            else:
+                zload = zin
+            zin = z0 * ((zload * np.cosh(K * self.dx) - z0 * np.sinh(K * self.dx)) / (
+                    z0 * np.cosh(K * self.dx) - zload * np.sinh(K * self.dx)))
+
+        ref = abs((zin - z0) / (zin + z0)) ** 2
+        return 1 - ref

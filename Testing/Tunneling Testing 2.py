@@ -9,7 +9,7 @@ import time
 
 
 def gauss_init(x, k0, x0=0, d=1):
-    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (d ** 2)) * np.exp(1j * k0 * x)
+    return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (4 * d ** 2)) * np.exp(1j * k0 * x)
 
 
 def barrier(x, A, w, x0):
