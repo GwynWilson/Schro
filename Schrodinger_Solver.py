@@ -28,6 +28,7 @@ class Schrodinger(object):
         self.dx = x[1] - x[0]
         self.N = len(x)
         self.x_length = self.N * self.dx
+        self.deltax = None
 
         self.psi_x = psi
         self.psi_k = fftshift(fft(psi))
@@ -130,7 +131,6 @@ class Schrodinger(object):
         :param r: Will return the mod square of the wave function as an array, set to not do this by default
         :return: Returns if r= True
         """
-
         self.psi_squared_k = np.real(self.psi_k * np.conj(self.psi_k))
 
         if r == True:
@@ -222,18 +222,22 @@ class Schrodinger(object):
     def x_width(self):
         exs = self.expectation_x_square()
         ex = self.expectation_x()
-        return np.sqrt(exs-ex**2)
+        self.deltax = np.sqrt(exs - ex ** 2)
+        return self.deltax
 
+    def theoreticalEnergy(self, k=None):
+        if self.deltax == None:
+            self.x_width()
+        return self.hbar ** 2 / 2 * self.m * (k ** 2 + 1 / (4 * self.deltax ** 2))
 
-    def theoreticalEnergy(self):
-        return 0
-
-    def impedence(self):
-        E = self.energy()
-        # if E < max(self.v):
-        #     return 0
+    def impedence(self, E=None):
+        if E == None:
+            E = self.energy()
         for n, i in enumerate(reversed(self.v)):
-            K = 1j * np.sqrt(2 * self.m * (E - i)) / self.hbar
+            diff = (E - i)
+            if diff == 0:
+                diff += 10 ** -99
+            K = 1j * np.sqrt(2 * self.m * diff + 0j) / self.hbar
             z0 = -1j * self.hbar * K / self.m
             if n == 0:
                 zload = z0
@@ -242,5 +246,16 @@ class Schrodinger(object):
             zin = z0 * ((zload * np.cosh(K * self.dx) - z0 * np.sinh(K * self.dx)) / (
                     z0 * np.cosh(K * self.dx) - zload * np.sinh(K * self.dx)))
 
-        ref = abs((zin - z0) / (zin + z0)) ** 2
-        return 1 - ref
+        coeff = np.real(((zin - z0) / (zin + z0)) * np.conj((zin - z0) / (zin + z0)))
+        return 1 - coeff
+
+    def impedencePacket(self):
+        self.normalise_k()
+        self.mod_square_k()
+        T_tot = 0
+        for k, w in zip(self.k, self.psi_squared_k):
+            if w > 10 ** -10:
+                E = (self.hbar ** 2 * k ** 2) / (2 * self.m)
+                imp = self.impedence(E=E)
+                T_tot += imp * w
+        return T_tot
