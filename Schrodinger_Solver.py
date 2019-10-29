@@ -64,8 +64,11 @@ class Schrodinger(object):
         k_lim = np.pi / self.dx
         self.k1 = -k_lim + (2 * k_lim / self.N) * np.arange(self.N)
         self.k = self.k1
+        self.dk = self.k[1] - self.k[0]
 
-    def evolve_x(self):
+        self.mod_square_k()
+
+    def evolve_x(self, half=False):
         """
         Function to evolve the wave function in x space
         :return: None
@@ -79,7 +82,10 @@ class Schrodinger(object):
                 self.v = self.potential(self.x, self.t)
 
         # Evolving the wave function
-        self.psi_x = self.psi_x * np.exp(-1j * (np.asarray(self.v) * self.dt) / self.hbar)
+        if half:
+            self.psi_x = self.psi_x * np.exp(-0.5j * (np.asarray(self.v) * self.dt) / self.hbar)
+        else:
+            self.psi_x = self.psi_x * np.exp(-1j * (np.asarray(self.v) * self.dt) / self.hbar)
 
     def evolve_k(self):
         """
@@ -104,12 +110,13 @@ class Schrodinger(object):
         """
         self.dt = dt
         for i in range(N_steps):
-            self.evolve_x()
+            self.evolve_x(half=True)
             self.psi_k = fftshift(fft(self.psi_x, norm="ortho"))
             # self.psi_k = self.normalise_k()
             self.evolve_k()
             self.psi_x = ifft(fftshift(self.psi_k), norm="ortho")
-            # self.psi_x = self.normalise_x()
+            self.evolve_x(half=True)
+            self.psi_x = self.normalise_x()
 
         self.t += (N_steps * self.dt)
 
@@ -249,13 +256,14 @@ class Schrodinger(object):
         coeff = np.real(((zin - z0) / (zin + z0)) * np.conj((zin - z0) / (zin + z0)))
         return 1 - coeff
 
-    def impedencePacket(self):
+    def impedencePacket(self, tol=10 ** -9):
         self.normalise_k()
         self.mod_square_k()
         T_tot = 0
         for k, w in zip(self.k, self.psi_squared_k):
-            if w > 10 ** -10:
+            if w > tol:
                 E = (self.hbar ** 2 * k ** 2) / (2 * self.m)
                 imp = self.impedence(E=E)
-                T_tot += imp * w
-        return T_tot
+                T_tot += imp * w * self.dk
+        else:
+            return T_tot

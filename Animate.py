@@ -85,7 +85,7 @@ class Animate():
         self.time_text.set_text(f"t = {self.sch.t:.3f}")
         # self.potential.set_data(self.sch.x, self.sch.v / max(self.sch.v))
         self.potential.set_data(self.sch.x, self.sch.v)
-        self.line2.set_data(fftshift(self.sch.k), fftshift(abs(self.sch.psi_k)))
+        self.line2.set_data(fftshift(self.sch.k), (fftshift(self.sch.mod_square_k(r=True))))
         return self.line1, self.line2, self.potential, self.time_text,
 
     def make_fig(self):
