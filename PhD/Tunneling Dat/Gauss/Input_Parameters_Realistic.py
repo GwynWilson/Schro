@@ -28,3 +28,7 @@ k0 = np.sqrt(2 * m * E / (hbar ** 2) - 1 / (4 * sig ** 2))
 
 bar_amp = scale * 10 ** 3
 omeg = 10 ** -6
+
+if __name__=="__main__":
+    from Numerical_Constants import Constants
+    Constants(bar_amp,dt,dx,k0)
