@@ -27,7 +27,7 @@ def run_A(A):
         sch.evolve_t(N_steps=step, dt=dt)
         time_list.append(sch.t)
         Trans_list.append(sch.barrier_transmition())
-        print("Height {v}, Time {t}".format(v=A, t=sch.t))
+        print("Height {v}, Time {t}".format(v=A/scale, t=sch.t))
 
     return sch.barrier_transmition(), imp
 
@@ -47,7 +47,7 @@ print("Imp",sch.impedencePacket(tol=10**-11))
 #             lim2=((sch.k[0], sch.k[-1]), (0, max(np.real(sch.psi_k)))))
 # a.make_fig()
 
-# v_list = np.arange(0.5, 5, 0.5)
+# v_list = np.arange(0.5, 5, 0.1)
 
 
 v_list = np.linspace(0.1, 3, 50) * bar_amp

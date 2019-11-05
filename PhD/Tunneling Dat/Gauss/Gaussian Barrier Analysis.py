@@ -45,7 +45,7 @@ def plotDiffReal():
     plt.show()
 
 ext = ""  # Extension to load
-# ext = "_Real"
+ext = "_Real"
 if ext == "_Real":
     from Input_Parameters_Realistic import *
 
