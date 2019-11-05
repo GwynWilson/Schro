@@ -11,7 +11,7 @@ class Animate():
     Class that carries out the animating of the wave function evolution
     """
 
-    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None):
+    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None,scale=(1,1,1)):
         """
         Initialising the Wave function
         :param sch: Schrodinger class that the Anminate class will evolve
