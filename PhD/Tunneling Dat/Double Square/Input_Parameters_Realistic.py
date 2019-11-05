@@ -22,7 +22,7 @@ x = np.arange(-lim, lim, dx)
 
 bar_amp = scale * 30 * 10 ** 3
 wid = (1 / 3) * 10 ** -6
-sep = (5 / 16) * 10 ** -6
+sep = (5 / 8) * 10 ** -6
 x1 = 0
 
 omeg = 10**-6
