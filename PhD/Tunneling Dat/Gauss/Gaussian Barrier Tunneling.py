@@ -20,14 +20,14 @@ def run_A(A):
     V_x = gauss_barrier(x, A, x1, omeg)
     sch = Schrodinger(x, Psi_x, V_x, hbar=hbar, m=m, t=0, args=x1)
 
-    imp = sch.impedencePacket(tol=10**-11)
+    imp = sch.impedencePacket(tol=10 ** -11)
     time_list = []
     Trans_list = []
     while sch.t < t_final:
         sch.evolve_t(N_steps=step, dt=dt)
         time_list.append(sch.t)
         Trans_list.append(sch.barrier_transmition())
-        print("Height {v}, Time {t}".format(v=A/scale, t=sch.t))
+        print("Height {v}, Time {t}".format(v=A / scale, t=sch.t))
 
     return sch.barrier_transmition(), imp
 
@@ -36,8 +36,8 @@ Psi_x = gauss_init(x, k0, x0=x0, d=sig)
 V_x = gauss_barrier(x, bar_amp, x1, omeg)
 
 sch = Schrodinger(x, Psi_x, V_x, hbar=hbar, m=m, t=0, args=x1)
-print("Energy", sch.energy())
-print("Imp",sch.impedencePacket(tol=10**-11))
+# print("Energy", sch.energy())
+# print("Imp",sch.impedencePacket(tol=10**-11))
 
 # plt.plot(sch.k, sch.mod_square_k(r=True))
 # plt.plot(x, np.asarray(V_x)/scale)
@@ -49,23 +49,40 @@ print("Imp",sch.impedencePacket(tol=10**-11))
 
 # v_list = np.arange(0.5, 5, 0.1)
 
+################ Changing V
+# v_list = np.linspace(0.1, 3, 50) * bar_amp
+# T_list = []
+# I_list = []
+# for i in v_list:
+#     T, I = run_A(i)
+#     T_list.append(T)
+#     I_list.append(I)
+#
+# save = [0 for k in range(len(v_list))]
+# for i in range(len(v_list)):
+#     save[i] = (v_list[i], T_list[i], I_list[i])
+#
+# var = [N, dx, omeg, dt, k0]
+#
+# np.savetxt("Gauss_Barrier_Real.txt", save)
+# np.savetxt("Gauss_Barrier_var_Real.txt", var)
+#
+# plt.plot(v_list, T_list)
+# plt.show()
 
-v_list = np.linspace(0.1, 3, 50) * bar_amp
-T_list = []
-I_list = []
-for i in v_list:
-    T, I = run_A(i)
-    T_list.append(T)
-    I_list.append(I)
-
-save = [0 for k in range(len(v_list))]
-for i in range(len(v_list)):
-    save[i] = (v_list[i], T_list[i], I_list[i])
-
-var = [N, dx, omeg, dt, k0]
-
-np.savetxt("Gauss_Barrier_Real.txt", save)
-np.savetxt("Gauss_Barrier_var_Real.txt", var)
-
-plt.plot(v_list, T_list)
+########## Resonance Testing
+omeglist = np.linspace(1, 2.5, 5) * omeg
+E_list = np.linspace(1, 2, 100) * bar_amp
+for o in omeglist:
+    V_x = gauss_barrier(x, bar_amp, x0=0, w=o)
+    Psi_x = gauss_init(x, k0, x0=x0, d=sig)
+    sch = Schrodinger(x, Psi_x, V_x, hbar=hbar, m=m, t=0, args=x1)
+    T_E = []
+    for e in E_list:
+        T_E.append(sch.impedence(E=e))
+    plt.plot(E_list / bar_amp, T_E, label="omeg={}".format(np.format_float_scientific(o, precision=3)))
+plt.legend()
+plt.xlabel("E/v0")
+plt.ylabel("Transmission Probability")
+plt.savefig("Changing_Width")
 plt.show()

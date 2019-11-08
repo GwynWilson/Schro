@@ -51,6 +51,10 @@ def t_choen2(L, V0, E, m=1, hbar=1):
     return np.real(trans)
 
 
+def minT(E, V):
+    return 4 * E * (E - V) / (4 * E * (E - V) + V ** 2)
+
+
 def impedence(v, E, m=1, hbar=1):
     for n, i in enumerate(reversed(v)):
         diff = (E - i)
@@ -108,6 +112,7 @@ finalt = 50
 
 c = Constants(bar_amp, dt, dx, k0)
 
+
 # plt.plot(x, sch.psi_squared)
 # plt.plot(x, V_x)
 # plt.show()
@@ -142,27 +147,27 @@ c = Constants(bar_amp, dt, dx, k0)
 # plt.show()
 
 #######Changing V
-v_list = np.arange(0.5, 5, 0.1)
-print(v_list)
-T_list = []
-T2_list = []
-T3_list = []
-E = sch.energy()
-for i in v_list:
-    print("Run", i)
-    T, I = run(i, choen=True)
-    T_list.append(T)
-    T2_list.append(t_choen2(L * dx, i, E, m=m, hbar=hbar))
-    T3_list.append(I)
-
-save = [0 for k in range(len(v_list))]
-for i in range(len(v_list)):
-    save[i] = (v_list[i], T_list[i], T2_list[i], T3_list[i])
-
-var = [N, dx, L * dx, dt, k0]
-
-np.savetxt("Square_Barrier.txt", save)
-np.savetxt("Square_Barrier_var.txt", var)
+# v_list = np.arange(0.5, 5, 0.1)
+# print(v_list)
+# T_list = []
+# T2_list = []
+# T3_list = []
+# E = sch.energy()
+# for i in v_list:
+#     print("Run", i)
+#     T, I = run(i, choen=True)
+#     T_list.append(T)
+#     T2_list.append(t_choen2(L * dx, i, E, m=m, hbar=hbar))
+#     T3_list.append(I)
+#
+# save = [0 for k in range(len(v_list))]
+# for i in range(len(v_list)):
+#     save[i] = (v_list[i], T_list[i], T2_list[i], T3_list[i])
+#
+# var = [N, dx, L * dx, dt, k0]
+#
+# np.savetxt("Square_Barrier.txt", save)
+# np.savetxt("Square_Barrier_var.txt", var)
 
 # plt.plot(v_list, T_list, label="Sim")
 # plt.plot(v_list, T2_list, label="Theory", linestyle="--")
@@ -172,3 +177,26 @@ np.savetxt("Square_Barrier_var.txt", var)
 # plt.ylabel("Transpmisson Probability")
 # plt.savefig("V0_Transmission")
 # plt.show()
+
+############ Resonances
+def n(L, V, E):
+    k2 = np.sqrt(2 * m * (E - V)) / hbar
+    output = []
+    arg = 0
+    c = 0
+    while arg < L:
+        c += 1
+        arg = c * np.pi / k2 - np.pi / 2 * k2
+        output.append(arg)
+    return output
+
+
+V = 1
+E = np.linspace(1, 5, 1000) * V
+L = 10
+Transmission = [t_choen2(L, V, e) for e in E]
+for e in E:
+    ns = n(L, V, e)
+
+plt.plot(E, Transmission)
+plt.show()
