@@ -40,7 +40,7 @@ omeg = 10
 gam = 1
 x0 = 1
 
-run = 10
+run = 5
 
 processes1 = manyRuns(run, n, dt, a, b, x0=x0, aargs=(omeg, gam), bargs=gam)
 processes2 = manyRuns(run, n * 10, dt / 10, a, b, x0=x0, aargs=(omeg, gam), bargs=gam)
@@ -50,4 +50,5 @@ plt.plot([i * dt for i in range(n)], itoAverages(processes1), label="Run1")
 plt.plot([i * dt / 10 for i in range(n * 10)], itoAverages(processes2), label="Run2")
 plt.plot(t_list, zs, label="Exact")
 plt.legend()
+plt.savefig("Noisy Oscillator")
 plt.show()

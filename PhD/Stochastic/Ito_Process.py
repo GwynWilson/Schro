@@ -80,14 +80,16 @@ if __name__ == "__main__":
     b = 1
     x0 = 0
 
-    run = 100
+    run = 15
     runs = np.zeros([run, n])
     for i in range(run):
         process = itoProcess(n, dt, test, b)
         plt.plot(process)
         runs[i] = process
+    # plt.savefig("Ito_run")
     plt.show()
 
     plt.plot(itoAverages(runs))
     plt.plot(-1 * np.cos(t_list) + np.cos(0))
+    # plt.savefig("Ito average")
     plt.show()
