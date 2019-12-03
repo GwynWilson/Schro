@@ -23,7 +23,7 @@ def squareBarrier(x, A, x1, x2):
 
 
 def gaussianBarrier(x, x0, w, A):
-    return A  * (np.exp(-(x - x0) ** 2 / w ** 2))
+    return A * (np.exp(-(x - x0) ** 2 / w ** 2))
 
 
 def T_s(V0, E, gauss=False):
