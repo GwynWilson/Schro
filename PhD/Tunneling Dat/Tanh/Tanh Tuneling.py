@@ -61,39 +61,40 @@ sch = Schrodinger(x, psi_x, v_sq, hbar=hbar, m=m, t=0, args=L / 2)
 
 ys = tanhBarrierNoNorm(x, bar_amp, L, 10 ** -6)
 
-ppot, pcov = curve_fit(gaussian, x, ys, p0=(0, 2*10 ** -6, bar_amp))
-print(ppot)
-plt.plot(x / 10 ** -6, ys / scale * 10 ** -3, label="Tanh")
-plt.plot(x / 10 ** -6, gaussian(x, ppot[0], ppot[1], ppot[2]) / scale * 10 ** -3, label="Fit")
-plt.legend()
-plt.xlim(-10, 10)
-plt.ylabel("V (kHz)")
-plt.xlabel("x (micrometers)")
-plt.title("Tanh and Gaussian Comparison")
+# ppot, pcov = curve_fit(gaussian, x, ys, p0=(0, 2*10 ** -6, bar_amp))
+# plt.plot(x / 10 ** -6, ys / scale * 10 ** -3, label="Tanh")
+# plt.plot(x / 10 ** -6, gaussian(x, ppot[0], ppot[1], ppot[2]) / scale * 10 ** -3, label="Fit")
+# plt.legend()
+# plt.xlim(-10, 10)
+# plt.ylabel("V (kHz)")
+# plt.xlabel("x (micrometers)")
+# plt.title("Tanh and Gaussian Comparison")
 # plt.savefig("Gaussian Comparison No Norm")
-plt.show()
+# plt.show()
 
-# w_list = np.logspace(-6, -8, 5)
-# w_list = np.asarray([10 ** -8, 10 ** -7, 0.3 * 10 ** -6, 10 ** -6])
-#
-# E_list = np.linspace(1, 4, 10000) * bar_amp
-#
+w_list = np.logspace(-6, -8, 5)
+w_list = np.asarray([10 ** -8, 10 ** -7, 0.3 * 10 ** -6, 10 ** -6])
+
+E_list = np.linspace(1, 4, 10000) * bar_amp
+
 # for w in w_list:
 #     plt.plot(x / 10 ** -6, tanhBarrier(x, bar_amp, L, w) / scale * 10 ** -3, label=f"{w}")
 # plt.legend()
+# plt.xlim(-6,6)
 # plt.ylabel("V (kHz)")
 # plt.xlabel("x (micrometers)")
 # plt.title("Barrier Shape")
 # plt.savefig("Tanh_w")
 # plt.show()
-#
-# for w in w_list:
-#     v_w = tanhBarrier(x, bar_amp, L, w)
-#     plt.plot(E_list / bar_amp, tunnelingSpectra(v_w, E_list), label=f"{w}")
-#
-# plt.legend()
-# plt.ylabel("Transmission Probability")
-# plt.xlabel("E/V0")
-# plt.title("Transmission Probability for changing w")
-# plt.savefig("Tanh_w_tunnel")
-# plt.show()
+
+for w in w_list:
+    v_w = tanhBarrier(x, bar_amp, L, w)
+    plt.plot(E_list / bar_amp, tunnelingSpectra(v_w, E_list), label=f"{w}")
+
+plt.legend()
+plt.ylabel("Transmission Probability")
+plt.xlabel("E/V0")
+plt.title("Transmission Probability for changing w")
+plt.xscale("log")
+plt.savefig("Tanh_w_tunnel_log")
+plt.show()

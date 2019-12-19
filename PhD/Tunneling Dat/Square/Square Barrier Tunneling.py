@@ -192,11 +192,20 @@ def n(L, V, E):
 
 
 V = 1
-E = np.linspace(1, 5, 1000) * V
+E = np.linspace(1, 5, 100) * V
 L = 10
-Transmission = [t_choen2(L, V, e) for e in E]
-for e in E:
-    ns = n(L, V, e)
+V_x = barrier(x, V, x1, x2)
+
+plt.plot(x,V_x)
+plt.show()
+
+Transmission = [t_choen2(L*dx, V, e) for e in E]
+# for e in E:
+#     ns = n(L, V, e)
+Imp = [impedence(V_x, e) for e in E]
+
+
 
 plt.plot(E, Transmission)
+plt.plot(E, Imp)
 plt.show()
