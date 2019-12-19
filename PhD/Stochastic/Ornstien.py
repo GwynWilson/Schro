@@ -20,7 +20,7 @@ dt = 0.0001
 t_list = np.array([i * dt for i in range(n)])
 k = 1
 D = 1
-x0=0
+x0 = 0
 
 # nruns = 100
 # tot_runs = manyRuns(nruns, n, dt, a, b,x0=x0, aargs=(k), bargs=(D))
