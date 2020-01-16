@@ -10,39 +10,34 @@ def a(x, t):
 def b(x, t):
     return amp
 
-I = 0
+
+def oneRun(n, dt, a, b, x0, B1_mag, B2_mag, thet):
+    run1 = ito.itoProcess(n, dt, a, b, x0=x0)
+    B1_x = B1_mag * np.asarray(run1)
+    B1_y = np.zeros(n)
+
+    run2 = ito.itoProcess(n, dt, a, b, x0=x0)
+    B2_x = B2_mag * np.asarray(run2) * np.cos(thet)
+    B2_y = B2_mag * np.asarray(run2) * np.sin(thet)
+    return B1_x + B2_x, B1_y + B2_y
+
+
+I = 1
 amp = 10 ** (-5)
 
 time = 10
-dt = 10**-3
+dt = 10 ** -3
 n = int(time / dt)
 
-# run = ito.itoProcess(n, dt, a, b, x0=I)
-# plt.plot(run)
-# plt.show()
-
-
 Bmag = 10
-thet = np.pi/4
-print(np.cos(thet))
+thet = np.pi / 4
 
-B1 = np.zeros(2)
-# run1 = ito.itoProcess(n, dt, a, b, x0=I)
-run1 = 1
-B1[0] = Bmag*run1
-print(B1)
+Av_x = Bmag * I + Bmag * I * np.cos(thet)
+Av_y = Bmag * I * np.sin(thet)
 
-B2 = np.zeros(2)
-# run2 = ito.itoProcess(n, dt, a, b, x0=I)
-run2 = 1
-B2[0] = Bmag*run2*np.cos(thet)
-B2[1] = Bmag*run2*np.sin(thet)
-
-x1,y1 = B1
-plt.scatter(x1,y1)
-
-x2,y2 = B2
-plt.scatter(x2,y2)
-
-plt.scatter(x1+x2,y1+y2)
+nRuns = 10
+for i in range(nRuns):
+    runx, runy = oneRun(n, dt, a, b, I, Bmag, Bmag, thet)
+    plt.scatter(runx, runy)
+plt.scatter(Av_x,Av_y)
 plt.show()
