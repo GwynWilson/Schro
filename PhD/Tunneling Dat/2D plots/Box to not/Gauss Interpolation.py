@@ -54,6 +54,7 @@ def T_array(X_list, Y_list, norm=False):
 w_list = np.logspace(-5, 1, 100)
 V_list = np.linspace(0.5, 1.5, 1000) * bar_amp
 
+
 ######### Comparison
 # y_dat = barrier(x, bar_amp, 10, sig)
 # popt, covt = curve_fit(gauss, x, y_dat, (bar_amp, 0, sig))
@@ -63,8 +64,13 @@ V_list = np.linspace(0.5, 1.5, 1000) * bar_amp
 
 
 ####### Barriers
+# w_list = np.logspace(-5, 1, 7)
 # for i in w_list:
-#     plt.plot(x, barrier(x, bar_amp, i, sig))
+#     plt.plot(x/10**-6, barrier(x, bar_amp, i, sig)/scale ,label=f"w={i}")
+# plt.legend(framealpha=1)
+# plt.title("Interpolating Barriers")
+# plt.ylabel("Barrier Height (hz)")
+# plt.xlabel("x (micrometers)")
 # plt.show()
 
 ######### 1D plot
@@ -79,14 +85,14 @@ V_list = np.linspace(0.5, 1.5, 1000) * bar_amp
 # plt.show()
 
 
-########## 2D
-T_porbability = T_array(V_list, w_list)
-np.savetxt("Interparray.txt",T_porbability)
-for i in T_porbability:
-    plt.plot(V_list / E, i)
-    plt.show()
-
-a = plt.pcolormesh(V_list / E, w_list, T_porbability)
-plt.colorbar(a)
-plt.yscale("log")
-plt.show()
+# ########## 2D
+# T_porbability = T_array(V_list, w_list)
+# np.savetxt("Interparray.txt",T_porbability)
+# for i in T_porbability:
+#     plt.plot(V_list / E, i)
+#     plt.show()
+#
+# a = plt.pcolormesh(V_list / E, w_list, T_porbability)
+# plt.colorbar(a)
+# plt.yscale("log")
+# plt.show()
