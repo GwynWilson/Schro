@@ -23,6 +23,11 @@ def gaussian(x, V0, L, sig=1, mu=0):
     return raw
 
 
+def gaussianNoNorm(x, V0, L, sig=1, mu=0):
+    return V0 * np.exp(-0.5 * ((x - mu) / sig) ** 2)
+
+
+
 def Impedence(v, E, m=1, hbar=1):
     for n, i in enumerate(reversed(v)):
         diff = (E - i)
@@ -116,21 +121,21 @@ plt.savefig("Choen_Tunneling")
 plt.show()
 
 ######## Gaussian
-# n = 100
-# V_list = np.linspace(0.5, 1, n) * bar_amp
-# plt.plot(x, gaussian(x, bar_amp, L, sig=sig))
-# plt.plot(x, V_x)
-# plt.show()
-#
-# T_prob = []
-# for v in V_list:
-#     V_g = gaussian(x, v, L)
-#     imp = Impedence(V_g, E, m=m, hbar=hbar)
-#     T_prob.append(imp)
-#
-# plt.plot(V_list / E, T_prob)
-# plt.title("Gaussiann")
-# plt.xlabel("V0/E")
-# plt.ylabel("Transmission Probability")
-# plt.savefig("Gaussian Tunneling")
-# plt.show()
+n = 100
+V_list = np.linspace(0.5, 1.5, n) * bar_amp
+plt.plot(x, gaussianNoNorm(x, bar_amp, L, sig=sig))
+plt.plot(x, V_x)
+plt.show()
+
+T_prob = []
+for v in V_list:
+    V_g = gaussianNoNorm(x, v, L)
+    imp = Impedence(V_g, E, m=m, hbar=hbar)
+    T_prob.append(imp)
+
+plt.plot(V_list / E, T_prob)
+plt.title("Gaussiann")
+plt.xlabel("V0/E")
+plt.ylabel("Transmission Probability")
+plt.savefig("Gaussian Tunneling")
+plt.show()
