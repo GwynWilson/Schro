@@ -58,12 +58,18 @@ d = 2
 
 mu0 = 1.2566370614 * 10 ** (-6)
 I = 300 * 10 ** (-3)
-Bx = 3 * 10 ** (-4)
+Bx = 9 * 10 ** (-5)
 y0 = mu0 * I / (2 * np.pi * Bx)
 y1_aprox = mu0 * I / (2 * np.pi * Bx)
 d = 1.9 * 10 ** (-3)
 
-n = 1000
+k = mu0 * I / (2 * np.pi)
+print(k)
+print((-Bx*d**2 + np.sqrt(Bx**2*d**4 + 2*d*k)) /k)
+print((-Bx*d**2 - np.sqrt(Bx**2*d**4 + 2*d*k)) /k)
+print(y0)
+
+n = 100
 y_list = np.linspace(0.5 * y0, 5 * y0, n)
 z_list = np.linspace(-d, d, n)
 
@@ -104,7 +110,7 @@ y1 = y_zoom[y1_ind]
 # scale = 10**-3
 #
 # fig, axs = plt.subplots(2, 2, sharex=True, sharey=True, figsize=(11, 8))
-# fig.suptitle("Magnetic field of each component")
+# fig.suptitle(f"Magnetic field of each component, Btilde={Bx}")
 # axs[0, 0].plot(z_list/scale, B_x)
 # axs[0, 0].set_title("B_x")
 # axs[0, 1].plot(z_list/scale, B_y)
@@ -117,24 +123,34 @@ y1 = y_zoom[y1_ind]
 # fig.text(0.5, 0.05, "Z (mm)", va='center', ha='center')
 # fig.text(0.04, 0.5, "B (Kg/As^2)", va='center', ha='center', rotation='vertical')
 #
-# plt.savefig("All_Fields")
+# # plt.savefig(f"All_Fields_{Bx}")
 # plt.show()
 
 #####Contour
-y_list = np.linspace(0.5 * y0, 3 * y0, n)
-Z, Y = np.meshgrid(z_list, y_list)
-Btot = T_array(z_list, y_list)
-a = plt.contourf(Z, Y, Btot, 20, cmap="gist_heat")
-plt.colorbar(a)
-plt.title("Total magnetic field in x=0 plane")
-plt.xlabel("z")
-plt.ylabel("y")
-plt.tight_layout()
-plt.savefig("Btot_cont")
-plt.show()
+# y_list = np.linspace(0.5 * y0, 3 * y0, n)
+# Z, Y = np.meshgrid(z_list, y_list)
+# Btot = T_array(z_list, y_list)
+# a = plt.contourf(Z, Y, Btot, 20, cmap="gist_heat")
+# plt.colorbar(a)
+# plt.title("Total magnetic field in x=0 plane")
+# plt.xlabel("z")
+# plt.ylabel("y")
+# plt.tight_layout()
+# plt.savefig(f"Btot_cont_{Bx}")
+# plt.show()
 
 ###### Roots
 # plt.plot(y_list, root(y_list))
 # plt.show()
 # ysolved = fsolve(root, x0=y0)[0]
 # print(f"Z trap minima y={ysolved} \nInfinite wire minima y={y0} \nDiffernce = {abs(ysolved-y0)}")
+
+
+###### Harmonic Trapping
+# z_zoom = np.linspace(-d / 4, d / 4, n)
+# B_z_y1 = [totB(0, y1, i, Bx) for i in z_zoom]
+# B_z = [B_z_y1[i][2] for i in range(n)]
+#
+# plt.plot(z_list, B_z)
+# plt.show()
+
