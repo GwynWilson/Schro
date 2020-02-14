@@ -44,6 +44,11 @@ def barrier5(x, w, L):
     return raw
 
 
+def barrier7(x, w, L):
+    w = w
+    return np.tanh(1 / w * (2 / w + np.e) ** (-4 * (x ** 2) / L ** 2)) / np.tanh(1 / w)
+
+
 def barrier6(x, w, L):
     raw = np.tanh((2 / w + np.e) ** (-4 * (x ** 2) / L ** 2) / w) / np.tanh(1 / w)
     return raw
@@ -103,3 +108,11 @@ L = 6
 # y = [arg(i) for i in w_list]
 # plt.plot(w_list,y)
 # plt.show()
+
+##### Better Variables
+w_list = [-1, 0, 1, 10, 100]
+w_list = [10 ** -100, 0.01, 100]
+for w in w_list:
+    bar = barrier7(x, w, L)
+    plt.plot(x, bar)
+plt.show()
