@@ -64,10 +64,6 @@ y1_aprox = mu0 * I / (2 * np.pi * Bx)
 d = 1.9 * 10 ** (-3)
 
 k = mu0 * I / (2 * np.pi)
-print(k)
-print((-Bx*d**2 + np.sqrt(Bx**2*d**4 + 2*d*k)) /k)
-print((-Bx*d**2 - np.sqrt(Bx**2*d**4 + 2*d*k)) /k)
-print(y0)
 
 n = 100
 y_list = np.linspace(0.5 * y0, 5 * y0, n)
@@ -77,6 +73,10 @@ y_zoom = np.linspace(0.95, 1.05, 10000) * y0
 B_centre = abs(Bx - B2(0, y_zoom, 0))
 y1_ind = np.where(B_centre == min(B_centre))[0][0]
 y1 = y_zoom[y1_ind]
+print("Actual min", y1)
+print("Aprox Min", k / Bx * (1 - k ** 2 / (2 * Bx ** 2 * d ** 2)))
+print("y0", y0)
+print(y0**3/d**3)
 
 ####Wire
 # plt.plot(y_list, abs(Bx - wire(y_list)), label="Infinite")
@@ -154,3 +154,8 @@ y1 = y_zoom[y1_ind]
 # plt.plot(z_list, B_z)
 # plt.show()
 
+
+#### Wire x direc
+# r_list = np.sqrt(np.asarray(z_list)**2+y0**2)
+# plt.plot(Bx-wire(r_list))
+# plt.show()
