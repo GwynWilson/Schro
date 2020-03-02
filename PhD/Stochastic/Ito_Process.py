@@ -22,6 +22,7 @@ def itoProcess(n, dt, a, b, x0=0, t0=0, w=None, aargs=None, bargs=None):
     temp = []
     if w == None:
         w = weinerProcess(n, dt)
+        # w = np.sqrt(dt)*np.random.randn(n)
     for i in range(n):
         tempx = 0
         if i != 0:
@@ -45,10 +46,39 @@ def itoProcess(n, dt, a, b, x0=0, t0=0, w=None, aargs=None, bargs=None):
     return temp
 
 
+def itoProcess2(n, dt, a, b, x0=0, t0=0, aargs=None, bargs=None):
+    t = t0
+    x = x0
+    temp = []
+    for i in range(n):
+        tempx = 0
+        if callable(a):
+            if aargs != None:
+                tempx += a(x, t, aargs) * dt
+            else:
+                tempx += a(x, t) * dt
+        else:
+            tempx += a * dt
+
+        dw = np.sqrt(dt)*np.random.randn()
+        if callable(b):
+            if bargs != None:
+                tempx += b(x, t, bargs) * dw
+            else:
+                tempx += b(x, t) * dw
+        else:
+            tempx += b * dw
+        x += tempx
+        temp.append(x)
+        t += dt
+    return temp
+
+
 def manyRuns(run, n, dt, a, b, x0=0, t0=0, w=None, aargs=None, bargs=None):
-    runs = np.zeros([run, n], dtype=complex)
+    # runs = np.zeros([run, n], dtype=complex)
+    runs = np.zeros([run, n])
     for i in range(run):
-        process = itoProcess(n, dt, a, b, x0=x0, t0=t0, w=w, aargs=aargs, bargs=bargs)
+        process = itoProcess2(n, dt, a, b, x0=x0, t0=t0, aargs=aargs, bargs=bargs)
         runs[i] = process
     return runs
 
@@ -68,6 +98,17 @@ def itoAverages(runs):
     return average
 
 
+def runsData(data):
+    runs, l = np.shape(data)
+    average = np.zeros(l)
+    variance = np.zeros(l)
+    for i in range(l):
+        dslice = data[:, i]
+        average[i] = np.mean(dslice)
+        variance[i] = np.var(dslice)
+    return average, variance
+
+
 def test(x, t):
     return np.sin(t)
 
@@ -77,13 +118,13 @@ if __name__ == "__main__":
     dt = 0.01
     t_list = [i * dt for i in range(n)]
     a = 1
-    b = 1
+    b = 0.1
     x0 = 0
 
     run = 15
     runs = np.zeros([run, n])
     for i in range(run):
-        process = itoProcess(n, dt, test, b)
+        process = itoProcess2(n, dt, test, b)
         plt.plot(process)
         runs[i] = process
     # plt.savefig("Ito_run")

@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Ito_Process import weinerProcess
 
 
 def oneRun(n, dt, x0, v0, a, b):
@@ -10,15 +9,14 @@ def oneRun(n, dt, x0, v0, a, b):
     tl = [0]
     x = x0
     v = g * x0 / (2 * m) + v0
-    wt = weinerProcess(n, dt)
-    for w in wt[:-1]:
+    for w in range(n - 1):
         t += dt
         tl.append(t)
 
         x += v * dt
         xl.append(x)
 
-        v += -a * x * dt + b * np.exp(g * t / (2 * m)) * w
+        v += -a * x * dt + b * np.exp(g * t / (2 * m)) * np.sqrt(dt) * np.random.randn()
         vl.append(v)
 
     x_act = []
@@ -34,7 +32,9 @@ def manyRun(n_runs, n, dt, x0, v0, a, b):
     runsx = np.zeros([n_runs, n])
     runsv = np.zeros([n_runs, n])
     for i in range(n_runs):
-        print(i)
+        # print(i)
+        if i % 100 == 0:
+            print(i)
         tl, xdat, vdat = oneRun(n, dt, x0, v0, a, b)
         runsx[i] = np.real(xdat)
         runsv[i] = np.real(vdat)
@@ -87,50 +87,42 @@ def expectedVarx(t, g, m, sig, a, x0, v0):
 
     mat = pref * (1 + co1) + pref * np.exp(-G * t) * (1 - co1 * np.cos(2 * w * t) - co2 * np.sin(2 * w * t))
     initx = x0 ** 2 * (
-                np.cos(w * t) ** 2 + (G / w) * np.sin(w * t) * np.cos(w * t) + (G ** 2 / 4 * a) * np.sin(w * t) ** 2)
+            np.cos(w * t) ** 2 + (G / w) * np.sin(w * t) * np.cos(w * t) + (G ** 2 / 4 * a) * np.sin(w * t) ** 2)
     initxv = x0 * v0 * ((2 / w) * np.sin(w * t) * np.cos(w * t) + (G ** 2 / a) * np.sin(w * t) ** 2)
     initv = (v0 ** 2 / a) * np.sin(w * t) ** 2
     return mat + np.exp(-G * t) * (initx + initxv + initv)
 
-def expectedVarx2(t, g, m, sig, a, x0, v0):
+
+def expectedVarx2(t, g, m, b, a):
     G = g / m
     w = np.sqrt(a)
-    pref = sig ** 2 / (2 * G * (m ** 2) * a)
+    pref = b ** 2 / (2 * G * a)
     co1 = G ** 2 / (G ** 2 + 4 * a)
     co2 = 2 * G * w / (G ** 2 + 4 * a)
 
-    mat = pref * (1 + co1) - pref * np.exp(-G * t) * (1 + co1 * np.cos(2 * w * t) - co2 * np.sin(2 * w * t))
-    initx = x0 ** 2 * (
-                np.cos(w * t) ** 2 + (G / w) * np.sin(w * t) * np.cos(w * t) + (G ** 2 / 4 * a) * np.sin(w * t) ** 2)
-    initxv = x0 * v0 * ((2 / w) * np.sin(w * t) * np.cos(w * t) + (G ** 2 / a) * np.sin(w * t) ** 2)
-    initv = (v0 ** 2 / a) * np.sin(w * t) ** 2
-    return mat + np.exp(-G * t) * (initx + initxv + initv)
+    # return pref * (1 + co1 - np.exp(-G * t) * (1 + co1 * np.cos(2 * w * t) - co2 * np.sin(2 * w * t)))
+    return pref * (1 - co1 - np.exp(-G * t) * (1 - co1 * np.cos(2 * w * t) + co2 * np.sin(2 * w * t)))
 
 
-n = 50000
-dt = 0.0001
+n = 5000
+dt = 0.001
 
 g = 1
 m = 1
 k = 10
 
 a = (g ** 2 / (2 * m ** 2)) + (k / m)
-a = -(g ** 2 / (4 * m ** 2)) + (k / m)
-print("a", a)
-print("Period", 2 * np.pi / np.sqrt(a))
+# a = -(g ** 2 / (4 * m ** 2)) + (k / m)
 
-b = 0.05
+b = 2
 
 x0 = 10
 v0 = 0
-
-print("maxv", x0 * (1 / np.sqrt(a) - g / (2 * m)))
 
 ############ One Run
 # tl, x_act, v_act = oneRun(n, dt, x0, v0, a, b)
 # x_expect = expectedSolx(tl, g, m, a, x0, v0)
 # v_expect = expectedSolv(tl, g, m, a, x0, v0)
-# # v_expect = expectedSolv2(tl, g, m, a, x0, v0)
 #
 # plt.plot(tl, x_act)
 # plt.plot(tl, x_expect, linestyle="--")
@@ -147,17 +139,16 @@ print("maxv", x0 * (1 / np.sqrt(a) - g / (2 * m)))
 #     print(i)
 #     tl, x_act, v_act = oneRun(n, dt, x0, v0, a, b)
 #     ax1.plot(tl, x_act)
-#
 #     ax2.plot(tl, v_act)
 #
-# ax1.plot(tl, expectedSolx(tl, g, m, a, x0, v0), color="k")
-# ax2.plot(tl, expectedSolv(tl, g, m, a, x0, v0), color="k", label="Time Average")
+# ax1.plot(tl, expectedSolx(tl, g, m, a, x0, v0), color="k", linestyle="--")
+# ax2.plot(tl, expectedSolv(tl, g, m, a, x0, v0), color="k", label="Time Average", linestyle="--")
 # fig.suptitle("Vibrating Spring")
 # ax1.set_ylabel("x(t)")
 # ax2.set_ylabel("v(t)")
 # ax2.set_xlabel("t")
 # ax2.legend(loc=8)
-# # plt.savefig("Stocastic_Spring_3")
+# plt.savefig("Stocastic_Spring")
 # plt.show()
 
 ######### Energy Run
@@ -176,7 +167,7 @@ print("maxv", x0 * (1 / np.sqrt(a) - g / (2 * m)))
 # plt.show()
 
 ########## Many run dat
-# n_run = 1000
+# n_run = 10000
 # t, x_act, v_act = manyRun(n_run, n, dt, x0, v0, a, b)
 # ave = np.zeros(n)
 # for i in range(n_run):
@@ -185,21 +176,82 @@ print("maxv", x0 * (1 / np.sqrt(a) - g / (2 * m)))
 #         ave[j] += e_tot[j] / n_run
 #
 # average, variance = runsData(x_act)
-# np.savetxt("SpringData100g=1", (average, variance, ave))
+# np.savetxt("SpringData10000", (average, variance, ave))
 #
 # plt.plot(t, variance)
 # plt.title("Averaged Variance")
 # plt.xlabel("Time")
 # plt.ylabel("Variance")
-# plt.savefig("Spring_Variance_100g=1")
+# plt.savefig("Spring_Variance_10000")
 # plt.show()
 
-
 ########### Load dat
-# average, variance, ave = np.loadtxt("SpringData10000")
-tl = np.asarray([i * dt for i in range(n)])
-plt.plot(tl, expectedVarx2(tl, 0, m, b * m, a, x0, v0)-expectedSolx(tl,0,m,a,x0,v0)**2)
-plt.show()
+# n_load =10000
+# average, variance, ave = np.loadtxt(f"Dat/BigData{n_load}.txt")
+# n, dt, g, m, k, b = np.loadtxt("Dat/Variables.txt")
+# a = g ** 2 / (2 * m ** 2) + k / m
+# tl = np.asarray([i * dt for i in range(int(n))])
+#
+# fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+# ax1.plot(tl, average)
+# ax1.plot(tl, expectedSolx(tl, g, m, a, x0, v0), color="k", linestyle="--")
+#
+# ax2.plot(tl, variance, label="Simulated")
+# ax2.plot(tl, expectedVarx2(tl,g,m,b,a), color="k", label="Time Average", linestyle="--")
+# fig.suptitle(f"Average of Simulations n={n_load}")
+# ax1.set_ylabel("x(t)")
+# ax2.set_ylabel("v(t)")
+# ax2.set_xlabel("t")
+# ax2.legend(loc=8)
+# plt.savefig(f"Stocastic_Spring_Averaged_{n_load}")
+# plt.show()
 
-plt.plot(tl,variance)
+##### Multiple run lengths
+# n_run_list = [10, 100, 1000, 10000, 50000, 100000]
+# for n_run in n_run_list:
+#     t, x_act, v_act = manyRun(n_run, n, dt, x0, v0, a, b)
+#     ave = np.zeros(n)
+#     for i in range(n_run):
+#         e_tot = energy(x_act[i], v_act[i], k, m)
+#         for j in range(n):
+#             ave[j] += e_tot[j] / n_run
+#     av, var = runsData(x_act)
+#     np.savetxt(f"Dat/BigData{n_run}.txt", (av, var, ave))
+# np.savetxt("Dat/Variables.txt", (n, dt, g, m, k, b))
+
+######## Multiple Run Analysis
+n_run_list = [10, 100, 1000, 10000, 50000, 100000]
+n_run_list = [10000, 50000, 100000]
+n, dt, g, m, k, b = np.loadtxt("Dat/Variables.txt")
+tl = np.asarray([i * dt for i in range(int(n))])
+a = g ** 2 / (2 * m ** 2) + k / m
+pos_expect = expectedSolx(tl, g, m, a, x0, v0)
+var_expect = expectedVarx2(tl, g, m, b, a)
+# for n_run in n_run_list:
+#     average, variance, ave = np.loadtxt(f"Dat/BigData{n_run}.txt")
+#     plt.plot(tl, abs(variance - var_expect), label=f"{n_run:.0e}")
+# plt.legend()
+# plt.show()
+#
+# for n_run in n_run_list:
+#     average, variance, ave = np.loadtxt(f"Dat/BigData{n_run}.txt")
+#     plt.plot(tl, variance, label=f"{n_run}")
+# plt.plot(tl, var_expect, label="Theory")
+# plt.legend()
+# plt.show()
+
+fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+for n_run in n_run_list:
+    average, variance, ave = np.loadtxt(f"Dat/BigData{n_run}.txt")
+    ax1.plot(tl,abs(average-pos_expect), label=f"{n_run:.0e}")
+    ax2.plot(tl, abs(variance - var_expect))
+
+fig.suptitle(f"Difference of simulation and theory")
+box = ax1.get_position()
+ax1.set_position([box.x0,box.y0,box.width*0.8,box.height])
+ax1.set_ylabel("x(t)")
+ax2.set_ylabel("v(t)")
+ax2.set_xlabel("t")
+ax1.legend(bbox_to_anchor=(1.04,1))
+# plt.savefig(f"Stocastic_Spring_Difference_Big")
 plt.show()

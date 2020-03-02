@@ -11,8 +11,8 @@ def b(x, t, args):
     return np.sqrt(args)
 
 
-def expect(x0,k, t):
-    return x0*np.exp(-k * t)
+def expect(x0, k, t):
+    return x0 * np.exp(-k * t)
 
 
 n = 1000
@@ -32,9 +32,10 @@ x0 = 0
 # plt.plot(t_list, expect(x0,k, t_list))
 # plt.show()
 
-runlist = [10,100,1000]
+runlist = [10, 100, 1000]
+
 for i in runlist:
-    tot_runs = manyRuns(i,n,dt,a, b,x0=x0, aargs=(k), bargs=(D))
-    plt.plot(t_list,itoAverages(tot_runs),label=f"{i}")
+    tot_runs = manyRuns(i, n, dt, a, b, x0=x0, aargs=(k), bargs=(D))
+    plt.plot(t_list, itoAverages(tot_runs), label=f"{i}")
 plt.legend()
 plt.show()
