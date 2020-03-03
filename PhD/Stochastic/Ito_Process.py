@@ -49,8 +49,8 @@ def itoProcess(n, dt, a, b, x0=0, t0=0, w=None, aargs=None, bargs=None):
 def itoProcess2(n, dt, a, b, x0=0, t0=0, aargs=None, bargs=None):
     t = t0
     x = x0
-    temp = []
-    for i in range(n):
+    temp = [x0]
+    for i in range(n-1):
         tempx = 0
         if callable(a):
             if aargs != None:
