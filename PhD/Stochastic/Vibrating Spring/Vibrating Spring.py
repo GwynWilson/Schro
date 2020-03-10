@@ -221,7 +221,7 @@ v0 = 0
 
 ######## Multiple Run Analysis
 n_run_list = [10, 100, 1000, 10000, 50000, 100000]
-n_run_list = [10000, 50000, 100000]
+# n_run_list = [10000, 50000, 100000]
 n, dt, g, m, k, b = np.loadtxt("Dat/Variables.txt")
 tl = np.asarray([i * dt for i in range(int(n))])
 a = g ** 2 / (2 * m ** 2) + k / m
@@ -249,9 +249,9 @@ for n_run in n_run_list:
 fig.suptitle(f"Difference of simulation and theory")
 box = ax1.get_position()
 ax1.set_position([box.x0,box.y0,box.width*0.8,box.height])
-ax1.set_ylabel("x(t)")
-ax2.set_ylabel("v(t)")
+ax1.set_ylabel("Position")
+ax2.set_ylabel("Variance")
 ax2.set_xlabel("t")
 ax1.legend(bbox_to_anchor=(1.04,1))
-# plt.savefig(f"Stocastic_Spring_Difference_Big")
+plt.savefig(f"Stocastic_Spring_Difference")
 plt.show()
