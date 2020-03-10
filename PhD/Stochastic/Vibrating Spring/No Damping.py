@@ -73,7 +73,7 @@ def expectedSolv(t, x0, v0, w):
 
 def expectedVar(t, sig, w):
     t = np.asarray(t)
-    return sig ** 2 / (2 * w ** 2) * (t - np.sin(2 * w * t) / (2 * w))
+    return sig ** 2 / (2* w ** 2) * (t - np.sin(2 * w * t) / (2 * w))
 
 
 def runsData(data):
@@ -195,14 +195,14 @@ print(dt)
 # np.savetxt("Dat/NoDampVariables", (n, dt, m, k, x0, v0))
 
 ##### Many Analysis
-# np.savetxt("Dat/NoDampVariables.txt", (n, dt, m, k, x0, v0))
-# n_run_list = [10, 100, 1000, 10000]
-# n, dt, m, k, x0, v0 = np.loadtxt("Dat/NoDampVariables.txt")
-# tl = np.asarray([i * dt for i in range(int(n))])
-# w = np.sqrt(k / m)
-# pos_expect = expectedSolx(tl, x0, v0, w)
-# var_expect = expectedVar(tl, sig, w)
-# e_expect = expectedE(tl,k,m,x0,v0,sig)
+np.savetxt("Dat/NoDampVariables.txt", (n, dt, m, k, x0, v0))
+n_run_list = [10, 100, 1000, 10000]
+n, dt, m, k, x0, v0 = np.loadtxt("Dat/NoDampVariables.txt")
+tl = np.asarray([i * dt for i in range(int(n))])
+w = np.sqrt(k / m)
+pos_expect = expectedSolx(tl, x0, v0, w)
+var_expect = expectedVar(tl, sig, w)
+e_expect = expectedE(tl,k,m,x0,v0,sig)
 #
 # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
 # for n_run in n_run_list:
