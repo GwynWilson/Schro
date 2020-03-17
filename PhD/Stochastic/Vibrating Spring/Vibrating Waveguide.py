@@ -93,8 +93,8 @@ def energy(x, v, k, m):
 
 def expectedE(t, k, m, x0, v0, sig):
     t = np.asarray(t)
-    # return 0.5 * k * x0 ** 2 + 0.5 * m * v0 ** 2 + 0.5 * sig ** 2 * t / m
-    return 0.5 * k * x0 ** 2 + 0.5 * m * v0 ** 2 + sig ** 2 * t / (m)
+    return 0.5 * k * x0 ** 2 + 0.5 * m * v0 ** 2 + 0.5 * sig ** 2 * t / m
+    # return 0.5 * k * x0 ** 2 + 0.5 * m * v0 ** 2 + sig ** 2 * t / (2*m**2)
 
 
 def manyRun(n_runs, n, dt, x0, v0, a, b, energy=False):
@@ -133,6 +133,9 @@ def runsData(data):
 def expectedVar(t, sig, w):
     t = np.asarray(t)
     return sig ** 2 / (2 * w ** 2 * m ** 2) * (t - np.sin(2 * w * t) / (2 * w))
+
+def poly(x,a):
+    return a*x
 
 
 d = 0.004
@@ -221,18 +224,18 @@ v0 = 0
 
 ##### Average Run_variations
 n_runs = 1000
-variations = 10
-for i in range(variations):
-    print("---------------------", i)
-    tl, xl, vl, el = averageRun(n_runs, n, dt, x0, v0, w ** 2, sig / m)
-    np.savez_compressed(f"Dat/WaveguideDat{n_runs}_{i}_dt{dt:.0E}", tl=tl, xl=xl, vl=vl, el=el)
+# variations = 10
+# for i in range(variations):
+#     print("---------------------", i)
+#     tl, xl, vl, el = averageRun(n_runs, n, dt, x0, v0, w ** 2, sig / m)
+#     np.savez_compressed(f"Dat/WaveguideDat{n_runs}_{i}_dt{dt:.0E}", tl=tl, xl=xl, vl=vl, el=el)
 
 # variations = 10
 # compx = np.zeros(n)
 # compv = np.zeros(n)
 # compe = np.zeros(n)
 # for i in range(variations):
-#     dat = np.load(f"Dat/WaveguideDat{n_runs}_{i}.npz")
+#     dat = np.load(f"Dat/WaveguideDat{n_runs}_{i}_dt{dt:.0E}.npz")
 #     tl = dat["tl"]
 #     xl = dat["xl"]
 #     vl = dat["vl"]
@@ -240,7 +243,7 @@ for i in range(variations):
 #     compx += xl / variations
 #     compv += vl / variations
 #     compe += el / variations
-# np.savez_compressed(f"Dat/WaveguideDat{n_runs * variations}", tl=tl, xl=compx, vl=compv, el=compe)
+# np.savez_compressed(f"Dat/WaveguideDat{n_runs * variations}_dt{dt:.0E}", tl=tl, xl=compx, vl=compv, el=compe)
 # plt.plot(tl, compx)
 # plt.show()
 # plt.plot(tl, compv)
@@ -265,10 +268,10 @@ for i in range(variations):
 # plt.show()
 
 ##### Manydat
-# n_list = [10, 100, 1000, 10000]
+# n_list = [100, 1000, 10000]
 # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
 # for i in n_list:
-#     dat = np.load(f"Dat/WaveguideDat{i}.npz")
+#     dat = np.load(f"Dat/WaveguideDat{i}_dt{dt:.0E}.npz")
 #     tl = dat["tl"]
 #     xl = dat["xl"]
 #     vl = dat["vl"]
@@ -281,7 +284,7 @@ for i in range(variations):
 # ax1.set_ylabel("x")
 # ax2.set_ylabel("v")
 # ax2.set_xlabel("t")
-# plt.savefig("Waveguide Time Averaging")
+# # plt.savefig("Waveguide Time Averaging")
 # plt.show()
 
 ##### ManyDat Energy
@@ -289,7 +292,7 @@ for i in range(variations):
 # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
 #
 # for i in n_list:
-#     dat = np.load(f"Dat/WaveguideDat{i}.npz")
+#     dat = np.load(f"Dat/WaveguideDat{i}_dt{dt:.0E}.npz")
 #     tl = dat["tl"]
 #     xl = dat["xl"]
 #     vl = dat["vl"]
@@ -299,6 +302,28 @@ for i in range(variations):
 #     ax2.plot(tl, energ_expect - el)
 #
 # ax1.plot(tl, energ_expect,color="k")
+# plt.show()
+
+
+####### Curve Fitting
+dat = np.load(f"Dat/WaveguideDat{10000}_dt{dt:.0E}.npz")
+tl = dat["tl"]
+xl = dat["xl"]
+vl = dat["vl"]
+el = dat["el"]
+
+
+popt, pcov = curve_fit(poly, tl, el)
+print("grad",popt[0])
+print("m",m)
+print("sig",sig)
+print("sig^2/m%2",sig**2/m**2)
+print("Grad pred",sig**2/(2*m))
+print(popt[0]/sig)
+
+
+# plt.plot(tl,el)
+# plt.plot(tl,poly(tl,popt[0]))
 # plt.show()
 
 ###### Pos/Var

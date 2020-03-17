@@ -10,7 +10,7 @@ def oneRun(n, dt, x0, v0, a, b):
     x = x0
     v = v0
     xol = x0
-    vol = x0
+    vol = v0
     for w in range(n - 1):
         t += dt
         tl.append(t)
@@ -222,23 +222,23 @@ e_expect = expectedE(tl,k,m,x0,v0,sig)
 # # plt.savefig(f"No_Damping_Position")
 # plt.show()
 #
-# fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-# for n_run in n_run_list:
-#     dat = np.load(f"Dat/NoDamp{n_run}.npz")
-#     average, variance, e_average = dat["arr_0"]
-#     # average, variance, ave = np.load(f"Dat/NoDamp{n_run}.npz")
-#     ax1.plot(tl, variance, label=f"{n_run:.0e}")
-#     ax2.plot(tl, variance - var_expect)
-#
-# ax1.plot(tl,var_expect, color="k", linestyle="--", label="Expected")
-# fig.suptitle(f"Variance")
-# box = ax1.get_position()
-# ax1.set_ylabel("Variance")
-# ax2.set_ylabel("Difference")
-# ax2.set_xlabel("t")
-# ax1.legend(loc=2)
-# # plt.savefig(f"No_Damping_Variance")
-# plt.show()
+fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+for n_run in n_run_list:
+    dat = np.load(f"Dat/NoDamp{n_run}.npz")
+    average, variance, e_average = dat["arr_0"]
+    # average, variance, ave = np.load(f"Dat/NoDamp{n_run}.npz")
+    ax1.plot(tl, variance, label=f"{n_run:.0e}")
+    ax2.plot(tl, variance - var_expect)
+
+ax1.plot(tl,var_expect, color="k", linestyle="--", label="Expected")
+fig.suptitle(f"Variance")
+box = ax1.get_position()
+ax1.set_ylabel("Variance")
+ax2.set_ylabel("Difference")
+ax2.set_xlabel("t")
+ax1.legend(loc=2)
+# plt.savefig(f"No_Damping_Variance")
+plt.show()
 #
 # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
 # for n_run in n_run_list:
