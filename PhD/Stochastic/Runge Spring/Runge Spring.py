@@ -338,7 +338,7 @@ def averageRunsData(n_runs, variables):
     np.savez(f"Dat/rk_{n_runs}_variables", variables)
 
 
-def loadData(n_runs):
+def loadData(n_runs, plot=False):
     dat = np.load(f"Dat/rk_{n_runs}_variables.npz")
     n, dt, x0, v0, w, sig, m = dat["arr_0"]
     var_list = [n, dt, x0, v0, w, sig, m]
@@ -355,27 +355,92 @@ def loadData(n_runs):
     x_average = average(x_sum, n_runs)
     v_average = average(v_sum, n_runs)
     x_variance = var(x_sum, x_square, n_runs)
+    v_variance = var(v_sum, v_square, n_runs)
+    sim_energy = energy(x_square, v_square, n_runs, m, w)
+    if plot:
+        plotData(x_average, v_average, x_variance, sim_energy, var_list)
+    return tl, x_average, v_average, x_variance, v_variance, sim_energy, var_list
 
+
+def loadDataList(n_list):
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    for n_runs in n_list:
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
+        n, dt, x0, v0, w, sig, m = variables
+        ax1.plot(tl, x_average - xHarmonic(x0, v0, w, tl), label=f"{n_runs}")
+        ax2.plot(tl, v_average - vHarmonic(x0, v0, w, tl))
+
+    ax1.legend(loc=3)
+    ax1.set_ylabel("x-x_expected")
+    ax2.set_ylabel("v-v_expected")
+    ax2.set_xlabel("t")
+    plt.show()
+
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    for n_runs in n_list:
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
+        n, dt, x0, v0, w, sig, m = variables
+        ax1.plot(tl, x_variance, label=f"{n_runs}")
+        ax2.plot(tl, x_variance - xVarHarmonic(sig, m, w, tl))
+
+    ax1.plot(tl, xVarHarmonic(sig, m, w, tl))
+    ax1.legend(loc=3)
+    ax1.set_ylabel("x var")
+    ax2.set_ylabel("x var-expected")
+    ax2.set_xlabel("t")
+    plt.show()
+
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    for n_runs in n_list:
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
+        ax1.plot(tl, sim_energy, label=f"{n_runs}")
+        ax2.plot(tl, sim_energy - energyExpect(variables))
+
+    ax1.plot(tl, energyExpect(variables))
+    ax1.legend(loc=3)
+    ax1.set_ylabel("Energy")
+    ax2.set_ylabel("Difference")
+    ax2.set_xlabel("t")
+    plt.show()
+
+
+def plotData(x_average, v_average, x_variance, sim_energy, variables):
     plt.plot(tl, x_average)
     plt.show()
     plt.plot(tl, x_variance)
     plt.show()
-    plt.plot(tl, energy(x_square, v_square, n_runs, m, w))
+    plt.plot(tl, sim_energy)
     plt.plot(tl, energyExpect(var_list))
     plt.show()
 
 
 def plotAverageRuns(n_runs, variables, method):
-    tr, x_av, x_var, v_av, v_var = averageRuns(n_runs, variables, method)
+    tr, x_sum, x_square, v_sum, v_square, xv = averageRuns(n_runs, variables, method)
+    x_average = average(x_sum, n_runs)
+    v_average = average(v_sum, n_runs)
+    x_variance = var(x_sum, x_square, n_runs)
+    v_variance = var(v_sum, v_square, n_runs)
+    sim_energy = energy(x_square, v_square, n_runs, m, w)
+
     # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    # ax1.plot(tr, x_av)
-    # ax2.plot(tr, v_av)
+    # ax1.plot(tr, x_average)
+    # ax2.plot(tr, v_average)
     # plt.show()
-    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    ax1.plot(tr, x_var)
-    ax1.plot(tr, xVarHarmonic(sig, m, w, tr))
-    ax2.plot(tr, v_var)
-    # plt.savefig(method.__name__ + "_Variance_BiggestRuns")
+    # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    # ax1.plot(tr, x_variance)
+    # ax1.plot(tr, xVarHarmonic(sig, m, w, tr))
+    # ax2.plot(tr, v_variance)
+    # # plt.savefig(method.__name__ + "_Variance_BiggestRuns")
+    # plt.show()
+    #
+    # fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    # ax1.plot(tl, sim_energy, label=f"{n_runs}")
+    # ax2.plot(tl, sim_energy - energyExpect(variables))
+    # plt.show()
+    plt.plot(tl, 0.5 * m * v_square / n_runs)
+    plt.plot(tl, 0.5 * m * w ** 2 * x_square / n_runs)
+    plt.show()
+    plt.plot(tl, 0.5 * m * v_square / n_runs + 0.5 * m * w ** 2 * x_square / n_runs)
     plt.show()
 
 
@@ -400,14 +465,19 @@ sig = 2
 x0 = 10
 v0 = 0
 
-n_runs = 1000
+n_runs = 100
 var_list = [n, dt, x0, v0, w, sig, m]
+
+plotAverageRuns(n_runs, var_list, rk2Stocastic)
 
 # compareEulerRk2(var_list)
 # compareEulerRk2ManyRun(n_runs, var_list)
 
 # manyRunVarianceComparison(n_runs, var_list)
 
-n_runs = 500
-averageRunsData(n_runs, var_list)
-loadData(n_runs)
+# n_runs = 50000
+# averageRunsData(n_runs, var_list)
+# loadData(n_runs, plot=True)
+
+# n_runs_list = [500, 1000, 5000, 10000]
+# loadDataList(n_runs_list)
