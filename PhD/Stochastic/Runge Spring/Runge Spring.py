@@ -301,7 +301,7 @@ def averageRuns(n_runs, variables, method):
     xv = np.zeros(n)
     prev = time.time()
     for n_run in range(n_runs):
-        if n_run % 1000 == 0:
+        if n_run % 100 == 0:
             # now = time.time()
             # diff = now - prev
             # d_left = diff * (n_runs - n_run)
@@ -370,12 +370,13 @@ def loadData(n_runs, plot=False):
     v_variance = var(v_sum, v_square, n_runs)
     sim_energy = energy(x_square, v_square, n_runs, m, w)
     if plot:
-        plotData(x_average, v_average, x_variance, sim_energy, var_list)
+        plotData(x_average, v_average, x_variance, v_variance, sim_energy, var_list)
     return tl, x_average, v_average, x_variance, v_variance, sim_energy, var_list
 
 
 def loadDataList(n_list):
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("Difference n")
     for n_runs in n_list:
         tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
         n, dt, x0, v0, w, sig, m = variables
@@ -386,33 +387,38 @@ def loadDataList(n_list):
     ax1.set_ylabel("x-x_expected")
     ax2.set_ylabel("v-v_expected")
     ax2.set_xlabel("t")
+    plt.savefig("Spring_Diff")
     plt.show()
 
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("x variance n")
     for n_runs in n_list:
         tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
         n, dt, x0, v0, w, sig, m = variables
         ax1.plot(tl, x_variance, label=f"{n_runs}")
         ax2.plot(tl, x_variance - xVarHarmonic(sig, m, w, tl))
 
-    ax1.plot(tl, xVarHarmonic(sig, m, w, tl))
+    ax1.plot(tl, xVarHarmonic(sig, m, w, tl), label="Expected", color="k", linestyle="--")
     ax1.legend(loc=3)
     ax1.set_ylabel("x var")
     ax2.set_ylabel("x var-expected")
     ax2.set_xlabel("t")
+    plt.savefig("Spring_var")
     plt.show()
 
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("Energy n")
     for n_runs in n_list:
         tl, x_average, v_average, x_variance, v_variance, sim_energy, variables = loadData(n_runs)
         ax1.plot(tl, sim_energy, label=f"{n_runs}")
         ax2.plot(tl, sim_energy - energyExpect(variables))
 
-    ax1.plot(tl, energyExpect(variables))
+    ax1.plot(tl, energyExpect(variables), label="Expected", color="k", linestyle="--")
     ax1.legend(loc=3)
     ax1.set_ylabel("Energy")
     ax2.set_ylabel("Difference")
     ax2.set_xlabel("t")
+    plt.savefig("Spring_energ")
     plt.show()
 
 
@@ -421,7 +427,8 @@ def multipleData(rep, n_runs, variables):
         print(f"----------------------------------------------\nRepetition {i}")
         averageRunsData(n_runs, variables, add=i)
 
-def mergeData(rep, n_runs,n):
+
+def mergeData(rep, n_runs, n):
     x_sum = np.zeros(n)
     x_square = np.zeros(n)
     v_sum = np.zeros(n)
@@ -432,22 +439,21 @@ def mergeData(rep, n_runs,n):
         x_sum += dat["x_sum"]
         x_square += dat["x_square"]
         v_sum += dat["v_sum"]
-        v_square = +dat["v_square"]
+        v_square += dat["v_square"]
         xv = +dat["xv"]
 
     dat = np.load(f"Dat/rk_{n_runs}_variables_0.npz")
     variables = dat["arr_0"]
 
-    np.savez_compressed(f"Dat/rk_{n_runs*rep}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
+    np.savez_compressed(f"Dat/rk_{n_runs * rep}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
                         xv=xv)
-    np.savez(f"Dat/rk_{n_runs*rep}_variables", variables)
+    np.savez(f"Dat/rk_{n_runs * rep}_variables", variables)
 
 
-
-def plotData(x_average, v_average, x_variance, sim_energy, variables):
+def plotData(x_average, v_average, x_variance, v_variance, sim_energy, variables):
     plt.plot(tl, x_average)
     plt.show()
-    plt.plot(tl, x_variance)
+    plt.plot(tl, v_variance)
     plt.show()
     plt.plot(tl, sim_energy)
     plt.plot(tl, energyExpect(var_list))
@@ -515,15 +521,14 @@ var_list = [n, dt, x0, v0, w, sig, m]
 
 # manyRunVarianceComparison(n_runs, var_list)
 
-# n_runs = 10000
+# n_runs = 100
 # averageRunsData(n_runs, var_list)
 # loadData(n_runs, plot=True)
 
-# n_runs_list = [500, 1000, 5000, 10000]
-# loadDataList(n_runs_list)
+n_runs_list = [100, 1000, 10000, 50000]
+loadDataList(n_runs_list)
 
-
-n_runs = 10000
-rep = 5
+# n_runs = 10000
+# rep = 5
 # multipleData(rep, n_runs, var_list)
-mergeData(rep,n_runs,n)
+# mergeData(rep,n_runs,n)
