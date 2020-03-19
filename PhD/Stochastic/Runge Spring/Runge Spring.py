@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 
 def genNoise(n, dt):
@@ -298,9 +299,18 @@ def averageRuns(n_runs, variables, method):
     v_sum = np.zeros(n)
     v_square = np.zeros(n)
     xv = np.zeros(n)
+    prev = time.time()
     for n_run in range(n_runs):
-        if n_run % 100 == 0:
-            print(f"Run: {n_run}")
+        if n_run % 1000 == 0:
+            # now = time.time()
+            # diff = now - prev
+            # d_left = diff * (n_runs - n_run)
+            # hr = d_left/3600
+            # min = (hr-np.floor(hr))*60
+            # sec = (min-np.floor(min))*60
+            # print(f"Run: {n_run}\nTime: {diff}\nLeft: {int(np.floor(hr))}:{int(np.floor(min))}:{int(np.floor(sec))}")
+            # prev = now
+            print(n_run)
         tr, xr, vr = method(n, dt, x0, v0, w ** 2, sig / m)
         x_sum += xr
         x_square += xr ** 2
@@ -331,11 +341,13 @@ def energyExpect(variables):
     return 0.5 * m * v0 ** 2 + 0.5 * m * w ** 2 * x0 ** 2 + sig ** 2 * tl / (2 * m)
 
 
-def averageRunsData(n_runs, variables):
+def averageRunsData(n_runs, variables, add=""):
+    if add != "":
+        add = "_" + str(add)
     tr, x_sum, x_square, v_sum, v_square, xv = averageRuns(n_runs, variables, rk2Stocastic)
-    np.savez_compressed(f"Dat/rk_{n_runs}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
+    np.savez_compressed(f"Dat/rk_{n_runs}{add}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
                         xv=xv)
-    np.savez(f"Dat/rk_{n_runs}_variables", variables)
+    np.savez(f"Dat/rk_{n_runs}_variables{add}", variables)
 
 
 def loadData(n_runs, plot=False):
@@ -404,6 +416,34 @@ def loadDataList(n_list):
     plt.show()
 
 
+def multipleData(rep, n_runs, variables):
+    for i in range(rep):
+        print(f"----------------------------------------------\nRepetition {i}")
+        averageRunsData(n_runs, variables, add=i)
+
+def mergeData(rep, n_runs,n):
+    x_sum = np.zeros(n)
+    x_square = np.zeros(n)
+    v_sum = np.zeros(n)
+    v_square = np.zeros(n)
+    xv = np.zeros(n)
+    for i in range(rep):
+        dat = np.load(f"Dat/rk_{n_runs}_{i}.npz")
+        x_sum += dat["x_sum"]
+        x_square += dat["x_square"]
+        v_sum += dat["v_sum"]
+        v_square = +dat["v_square"]
+        xv = +dat["xv"]
+
+    dat = np.load(f"Dat/rk_{n_runs}_variables_0.npz")
+    variables = dat["arr_0"]
+
+    np.savez_compressed(f"Dat/rk_{n_runs*rep}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
+                        xv=xv)
+    np.savez(f"Dat/rk_{n_runs*rep}_variables", variables)
+
+
+
 def plotData(x_average, v_average, x_variance, sim_energy, variables):
     plt.plot(tl, x_average)
     plt.show()
@@ -467,17 +507,23 @@ v0 = 0
 
 n_runs = 100
 var_list = [n, dt, x0, v0, w, sig, m]
-
-plotAverageRuns(n_runs, var_list, rk2Stocastic)
+# averageRuns(n_runs, var_list, rk2Stocastic)
+# plotAverageRuns(n_runs, var_list, rk2Stocastic)
 
 # compareEulerRk2(var_list)
 # compareEulerRk2ManyRun(n_runs, var_list)
 
 # manyRunVarianceComparison(n_runs, var_list)
 
-# n_runs = 50000
+# n_runs = 10000
 # averageRunsData(n_runs, var_list)
 # loadData(n_runs, plot=True)
 
 # n_runs_list = [500, 1000, 5000, 10000]
 # loadDataList(n_runs_list)
+
+
+n_runs = 10000
+rep = 5
+# multipleData(rep, n_runs, var_list)
+mergeData(rep,n_runs,n)
