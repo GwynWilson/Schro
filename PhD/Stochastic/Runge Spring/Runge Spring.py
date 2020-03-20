@@ -341,13 +341,21 @@ def energyExpect(variables):
     return 0.5 * m * v0 ** 2 + 0.5 * m * w ** 2 * x0 ** 2 + sig ** 2 * tl / (2 * m)
 
 
-def averageRunsData(n_runs, variables, add=""):
-    if add != "":
-        add = "_" + str(add)
-    tr, x_sum, x_square, v_sum, v_square, xv = averageRuns(n_runs, variables, rk2Stocastic)
-    np.savez_compressed(f"Dat/rk_{n_runs}{add}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
-                        xv=xv)
-    np.savez(f"Dat/rk_{n_runs}_variables{add}", variables)
+def averageRunsData(n_runs, variables, add="", euler=False):
+    if euler:
+        if add != "":
+            add = "_" + str(add)
+        tr, x_sum, x_square, v_sum, v_square, xv = averageRuns(n_runs, variables, eulerStocastic)
+        np.savez_compressed(f"Dat/eu_{n_runs}{add}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
+                            xv=xv)
+        np.savez(f"Dat/eu_{n_runs}_variables{add}", variables)
+    else:
+        if add != "":
+            add = "_" + str(add)
+        tr, x_sum, x_square, v_sum, v_square, xv = averageRuns(n_runs, variables, rk2Stocastic)
+        np.savez_compressed(f"Dat/rk_{n_runs}{add}", x_sum=x_sum, x_square=x_square, v_sum=v_sum, v_square=v_square,
+                            xv=xv)
+        np.savez(f"Dat/rk_{n_runs}_variables{add}", variables)
 
 
 def loadData(n_runs, plot=False):
@@ -490,6 +498,92 @@ def plotAverageRuns(n_runs, variables, method):
     plt.show()
 
 
+def dtTesting(n_list, final_t, runs, variables, euler=False):
+    n, dt, x0, v0, w, sig, m = variables
+    for n_v in n_list:
+        print(n_v)
+        dt_v = final_t / n_v
+        var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
+        averageRunsData(runs, var_list_v, add=dt_v, euler=euler)
+
+
+def dtLoadData(n_runs, variables, plot=False, euler=False):
+    n_v, dt_v, x0, v0, w, sig, m = variables
+    if euler:
+        dat = np.load(f"Dat/eu_{n_runs}_{dt_v}.npz")
+    else:
+        dat = np.load(f"Dat/rk_{n_runs}_{dt_v}.npz")
+    x_sum = dat["x_sum"]
+    x_square = dat["x_square"]
+    v_sum = dat["v_sum"]
+    v_square = dat["v_square"]
+    xv = dat["xv"]
+
+    tl = [i * dt_v for i in range(int(n_v))]
+
+    x_average = average(x_sum, n_runs)
+    v_average = average(v_sum, n_runs)
+    x_variance = var(x_sum, x_square, n_runs)
+    v_variance = var(v_sum, v_square, n_runs)
+    sim_energy = energy(x_square, v_square, n_runs, m, w)
+    if plot:
+        plotData(x_average, v_average, x_variance, v_variance, sim_energy, var_list)
+    return tl, x_average, v_average, x_variance, v_variance, sim_energy, var_list
+
+
+def dtLoadList(n_list, final_t, runs, variables, euler=False):
+    n, dt, x0, v0, w, sig, m = variables
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("Difference dt")
+    for n_v in n_list:
+        dt_v = final_t / n_v
+        var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, ignore_variables = dtLoadData(runs, var_list_v,
+                                                                                                    euler=euler)
+        ax1.plot(tl, x_average - xHarmonic(x0, v0, w, tl), label=f"{dt_v}")
+        ax2.plot(tl, v_average - vHarmonic(x0, v0, w, tl))
+        # ax1.plot(tl, x_average, label=f"{dt_v}")
+        # ax2.plot(tl, v_average)
+    ax1.legend(loc=4)
+    plt.show()
+
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("x variance n")
+    for n_v in n_list:
+        dt_v = final_t / n_v
+        var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, ignore_variables = dtLoadData(runs, var_list_v,
+                                                                                                    euler=euler)
+        ax1.plot(tl, x_variance, label=f"{dt_v}")
+        ax2.plot(tl, x_variance - xVarHarmonic(sig, m, w, tl))
+
+    ax1.plot(tl, xVarHarmonic(sig, m, w, tl), label="Expected", color="k", linestyle="--")
+    ax1.legend(loc=3)
+    ax1.set_ylabel("x var")
+    ax2.set_ylabel("x var-expected")
+    ax2.set_xlabel("t")
+    plt.savefig("Spring_var")
+    plt.show()
+
+    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+    fig.suptitle("Energy n")
+    for n_v in n_list:
+        dt_v = final_t / n_v
+        var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
+        tl, x_average, v_average, x_variance, v_variance, sim_energy, ignore_variables = dtLoadData(runs, var_list_v,
+                                                                                                    euler=euler)
+        ax1.plot(tl, sim_energy, label=f"{dt_v}")
+        ax2.plot(tl, sim_energy - energyExpect(var_list_v))
+
+    ax1.plot(tl, energyExpect(variables), label="Expected", color="k", linestyle="--")
+    ax1.legend(loc=3)
+    ax1.set_ylabel("Energy")
+    ax2.set_ylabel("Difference")
+    ax2.set_xlabel("t")
+    plt.savefig("Spring_energ")
+    plt.show()
+
+
 d = 5
 v = 1
 t = d / v
@@ -525,10 +619,18 @@ var_list = [n, dt, x0, v0, w, sig, m]
 # averageRunsData(n_runs, var_list)
 # loadData(n_runs, plot=True)
 
-n_runs_list = [100, 1000, 10000, 50000]
-loadDataList(n_runs_list)
+# n_runs_list = [100, 1000, 10000, 50000]
+# n_runs_list = [10000, 50000, 100000]
+# loadDataList(n_runs_list)
 
 # n_runs = 10000
-# rep = 5
+# rep = 10
 # multipleData(rep, n_runs, var_list)
-# mergeData(rep,n_runs,n)
+# mergeData(rep, n_runs, n)
+
+n_runs = 10000
+n_list = [1000, 5000, 10000, 50000]
+# dtTesting(n_list, t, n_runs, var_list, euler=True)
+
+dtLoadList(n_list, t, n_runs, var_list)
+# dtLoadList(n_list, t, n_runs, var_list, euler=True)
