@@ -532,6 +532,10 @@ def dtLoadData(n_runs, variables, plot=False, euler=False):
 
 
 def dtLoadList(n_list, final_t, runs, variables, euler=False):
+    if euler:
+        add = "_el"
+    else:
+        add = ""
     n, dt, x0, v0, w, sig, m = variables
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
     fig.suptitle("Difference dt")
@@ -545,10 +549,14 @@ def dtLoadList(n_list, final_t, runs, variables, euler=False):
         # ax1.plot(tl, x_average, label=f"{dt_v}")
         # ax2.plot(tl, v_average)
     ax1.legend(loc=4)
+    ax1.set_ylabel("x-x_expected")
+    ax2.set_ylabel("v-v_expected")
+    ax2.set_xlabel("t")
+    plt.savefig(f"Spring_Diff_dt{add}")
     plt.show()
 
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    fig.suptitle("x variance n")
+    fig.suptitle("x variance dt")
     for n_v in n_list:
         dt_v = final_t / n_v
         var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
@@ -562,11 +570,11 @@ def dtLoadList(n_list, final_t, runs, variables, euler=False):
     ax1.set_ylabel("x var")
     ax2.set_ylabel("x var-expected")
     ax2.set_xlabel("t")
-    plt.savefig("Spring_var")
+    plt.savefig(f"Spring_var_dt{add}")
     plt.show()
 
     fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    fig.suptitle("Energy n")
+    fig.suptitle("Energy dt")
     for n_v in n_list:
         dt_v = final_t / n_v
         var_list_v = [n_v, dt_v, x0, v0, w, sig, m]
@@ -580,7 +588,7 @@ def dtLoadList(n_list, final_t, runs, variables, euler=False):
     ax1.set_ylabel("Energy")
     ax2.set_ylabel("Difference")
     ax2.set_xlabel("t")
-    plt.savefig("Spring_energ")
+    plt.savefig(f"Spring_energ_dt{add}")
     plt.show()
 
 
@@ -619,7 +627,7 @@ var_list = [n, dt, x0, v0, w, sig, m]
 # averageRunsData(n_runs, var_list)
 # loadData(n_runs, plot=True)
 
-# n_runs_list = [100, 1000, 10000, 50000]
+n_runs_list = [100, 1000, 10000, 50000]
 # n_runs_list = [10000, 50000, 100000]
 # loadDataList(n_runs_list)
 
@@ -630,7 +638,7 @@ var_list = [n, dt, x0, v0, w, sig, m]
 
 n_runs = 10000
 n_list = [1000, 5000, 10000, 50000]
-# dtTesting(n_list, t, n_runs, var_list, euler=True)
+dtTesting(n_list, t, n_runs, var_list, euler=True)
 
 dtLoadList(n_list, t, n_runs, var_list)
-# dtLoadList(n_list, t, n_runs, var_list, euler=True)
+dtLoadList(n_list, t, n_runs, var_list, euler=True)
