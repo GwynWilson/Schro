@@ -3,6 +3,17 @@ import matplotlib.pyplot as plt
 import time
 
 
+def detectFolder():
+    import os
+    cwd = os.getcwd()
+    folder = "Dat"
+    if not os.path.exists(folder):
+        try:
+            os.mkdir(folder)
+        except OSError:
+            print("whoops")
+
+
 def genNoise(n, dt):
     """
     Will generate array of length 2n of gaussian white noise
@@ -301,7 +312,7 @@ def averageRuns(n_runs, variables, method):
     xv = np.zeros(n)
     prev = time.time()
     for n_run in range(n_runs):
-        if n_run % 100 == 0:
+        if n_run % 1000 == 0:
             # now = time.time()
             # diff = now - prev
             # d_left = diff * (n_runs - n_run)
@@ -583,7 +594,7 @@ def dtLoadList(n_list, final_t, runs, variables, euler=False):
         ax1.plot(tl, sim_energy, label=f"{dt_v}")
         ax2.plot(tl, sim_energy - energyExpect(var_list_v))
 
-    ax1.plot(tl, energyExpect(variables), label="Expected", color="k", linestyle="--")
+    ax1.plot(tl, energyExpect(var_list_v), label="Expected", color="k", linestyle="--")
     ax1.legend(loc=3)
     ax1.set_ylabel("Energy")
     ax2.set_ylabel("Difference")
@@ -613,6 +624,8 @@ sig = 2
 x0 = 10
 v0 = 0
 
+detectFolder()
+
 n_runs = 100
 var_list = [n, dt, x0, v0, w, sig, m]
 # averageRuns(n_runs, var_list, rk2Stocastic)
@@ -637,8 +650,8 @@ n_runs_list = [100, 1000, 10000, 50000]
 # mergeData(rep, n_runs, n)
 
 n_runs = 10000
-n_list = [1000, 5000, 10000, 50000]
-dtTesting(n_list, t, n_runs, var_list, euler=True)
+n_list = [500, 1000, 5000, 10000]
+# dtTesting(n_list, t, n_runs, var_list, euler=True)
 
 dtLoadList(n_list, t, n_runs, var_list)
-dtLoadList(n_list, t, n_runs, var_list, euler=True)
+# dtLoadList(n_list, t, n_runs, var_list, euler=True)
