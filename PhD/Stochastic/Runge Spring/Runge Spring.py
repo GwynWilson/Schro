@@ -650,8 +650,10 @@ n_runs_list = [100, 1000, 10000, 50000]
 # mergeData(rep, n_runs, n)
 
 n_runs = 10000
-n_list = [500, 1000, 5000, 10000]
+# n_list = [500, 1000, 5000, 10000]
+
 # dtTesting(n_list, t, n_runs, var_list, euler=True)
 
-dtLoadList(n_list, t, n_runs, var_list)
+# dtLoadList(n_list, t, n_runs, var_list)
+# n_list = [1000, 5000, 10000]
 # dtLoadList(n_list, t, n_runs, var_list, euler=True)

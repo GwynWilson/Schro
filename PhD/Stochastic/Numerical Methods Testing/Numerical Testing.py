@@ -43,13 +43,8 @@ def eulerMethod(n, dt, x0, v0, a):
     x = x0
     v = v0
     xol = x0
-<<<<<<< HEAD
     vol = v0
-    for i in range(n - 1):
-=======
-    vol = x0
     for w in range(n - 1):
->>>>>>> 4fe6fda... Numerical methods testing
         x += vol * dt
         xl.append(x)
 
@@ -73,13 +68,8 @@ def rk4Method(n, dt, x0, v0, a):
     x = x0
     v = v0
     xol = x0
-<<<<<<< HEAD
     vol = v0
-    for i in range(n - 1):
-=======
-    vol = x0
     for w in range(n - 1):
->>>>>>> 4fe6fda... Numerical methods testing
         x += vol * dt - (a * xol * dt ** 2) / 2 - (a * vol * dt ** 3) / 3
         xl.append(x)
         v += -a * xol * dt - (a * vol * dt ** 2) / 2 + (a ** 2 * xol * dt ** 3) / 3
@@ -102,11 +92,8 @@ def rk2Method(n, dt, x0, v0, a):
     x = x0
     v = v0
     xol = x0
-<<<<<<< HEAD
     vol = v0
-=======
     vol = x0
->>>>>>> 4fe6fda... Numerical methods testing
     for w in range(n - 1):
         x += dt * (vol + -a * xol * dt / 2)
         xl.append(x)
@@ -181,11 +168,7 @@ def solPlots(variables, t_lists, x_lists, v_lists, labels=None, title=None):
     ax2.set_ylabel("v")
     ax2.set_xlabel("t")
 
-<<<<<<< HEAD
     if title!= None:
-=======
-    if title:
->>>>>>> 4fe6fda... Numerical methods testing
         fig.suptitle(title + " Difference")
         plt.savefig("Numerics_" + title + "_Difference")
     plt.show()
@@ -221,7 +204,6 @@ def energyComparison(final_time, n, variables):
     e_expect = eHarmonic(x0, v0, w, t_e)
     plt.plot(t_e, (e_e - e_expect) / e_expect, label="Euler")
     plt.plot(t_r, (e_r - e_expect) / e_expect, label="Rk4")
-<<<<<<< HEAD
     plt.legend()
     plt.title("Energy discrepancy comparison")
     plt.xlabel("Time")
@@ -254,14 +236,12 @@ def averageRuns(n_runs, variables):
 n = 10000
 final_time = 5
 dt = final_time / n
-=======
-    plt.show()
+plt.show()
 
 
 n = 50000
 dt = 0.0001
 final_time = 5
->>>>>>> 4fe6fda... Numerical methods testing
 t_gen = np.arange(0, n * dt, dt)
 
 w = 5
@@ -270,13 +250,10 @@ v0 = 0
 m = 1
 var_list = [x0, v0, w, m]
 
-<<<<<<< HEAD
 # multipleRuns(final_time, [5000, 10000, 50000], var_list, eulerMethod, title="Euler Method")
 energyComparison(final_time, n, var_list)
 # tr, x_average, x_variance, v_average, v_variance = averageRuns(100,var_list)
 # plt.plot(tr,x_average)
 # plt.show()
-=======
 multipleRuns(final_time, [5000, 10000, 50000], var_list, rk4Method, title="Runge-Kuta 4")
 # energyComparison(final_time, n, var_list)
->>>>>>> 4fe6fda... Numerical methods testing
