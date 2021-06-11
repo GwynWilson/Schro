@@ -80,7 +80,7 @@ def T_array(X_list, Y_list, norm=False):
 def contourPlot(V_list, L_list, title=None, show=False, norm=False, dat=False):
     T_prob = T_array(V_list, L_list, norm=norm)
     plt.figure()
-    plt.contourf(V_list / (scale * 10 ** 3), L_list * 10 ** 6, T_prob.clip(min=0), 30, cmap="YlOrBr")
+    plt.contourf(V_list / bar_amp, L_list/l_scale, T_prob.clip(min=0), 30, cmap="YlOrBr")
     plt.colorbar()
     plt.xlabel("V0 (kHz)")
     plt.ylabel("Barrier Width (micrometers)")
@@ -89,7 +89,7 @@ def contourPlot(V_list, L_list, title=None, show=False, norm=False, dat=False):
         if norm:
             plt.savefig(title + " Norm")
         else:
-            plt.savefig(title)
+            plt.savefig(title+".png")
         if dat:
             np.savetxt(f"tanh_{title}.txt", T_prob)
     if show:
@@ -99,13 +99,13 @@ def contourPlot(V_list, L_list, title=None, show=False, norm=False, dat=False):
 
 
 w_list = np.asarray([10 ** -8, 10 ** -7, 0.2 * 10 ** -6, 0.3 * 10 ** -6, 0.5 * 10 ** -6, 10 ** -6])
-n = 100
-
-w_transform = np.logspace(1, 6, num=2)
-w = 10 ** 6
-sig = 10 ** -6
-L_list = np.linspace(0.5, 2, 2) * L
-s_list = np.logspace(-6, -5.5, 2)
+# n = 100
+#
+# w_transform = np.logspace(1, 6, num=2)
+# w = 10 ** 6
+# sig = 10 ** -6
+# L_list = np.linspace(0.5, 2, 2) * L
+# s_list = np.logspace(-6, -5.5, 2)
 
 # for s in s_list:
 #         plt.plot(x, tanhGauss(x, w_transform[0], bar_amp, L, sig=s))
@@ -113,10 +113,10 @@ s_list = np.logspace(-6, -5.5, 2)
 #     plt.plot(x, tanhGauss(x, wv, bar_amp, L, sig=sig))
 # plt.show()
 
-V_list = np.linspace(0.5, 1.2, 100) * bar_amp
-w_transform = np.logspace(1, 5.5, num=2)
-V = tanhGauss(x, 10, bar_amp, L, sig=sig)
-s_list = np.logspace(-6, -5.5, 100)
+# V_list = np.linspace(0.5, 1.2, 100) * bar_amp
+# w_transform = np.logspace(1, 5.5, num=2)
+# V = tanhGauss(x, 10, bar_amp, L, sig=sig)
+# s_list = np.logspace(-6, -5.5, 100)
 
 ####New Method attempt
 # T_prob = np.zeros((len(V_list), len(s_list)))
@@ -135,28 +135,39 @@ s_list = np.logspace(-6, -5.5, 100)
 
 
 ######## 2D Spectra
-# n = 200
-# V_list = np.linspace(0.5, 1.2, n) * bar_amp
-# L_list = np.linspace(0.5, 2, n) * L
-#
-# dat = True
-#
-# if dat:
-#     np.savetxt("tanh_V_list.txt", V_list)
-#     np.savetxt("tanh_L_list.txt", L_list)
-#     np.savetxt("tanh_w_list.txt", w_list)
-#
-# for i in w_list:
-#     w = i
-#     contourPlot(V_list, L_list, title=f"Tunneling w={w}", dat=dat)
-#     plt.figure()
-#     plt.title(f"Barrier Shape w={i}")
-#     plt.plot(x * 10 ** 6, tanhBarrierNorm(x, V_list[0], L_list[0], i) / (scale * 10 ** 3), label="Smallest Barrier")
-#     plt.plot(x * 10 ** 6, tanhBarrierNorm(x, V_list[0], L_list[-1], i) / (scale * 10 ** 3), label="Largest Barrier")
-#     plt.xlabel("x (micrometers)")
-#     plt.ylabel("V (kHz)")
-#     plt.legend(fancybox="True")
-#     plt.savefig(f"Barrier Shape w={i} Norm")
+n = 200
+
+bar_amp = 10 ** -30
+E = bar_amp
+l_scale = np.sqrt(hbar ** 2 / (2 * m * bar_amp))
+
+a0 = 5 * l_scale
+print(a0, L / 2)
+
+V_list = np.linspace(0.5, 1.2, n) * bar_amp
+L_list = np.linspace(1, 3, n) * a0
+w_list = np.asarray([0.01, 0.1, 1, 4]) * a0
+w_list = np.asarray([0.3]) * a0
+dat = True
+
+if dat:
+    np.savetxt("tanh_V_list.txt", V_list)
+    np.savetxt("tanh_L_list.txt", L_list)
+    np.savetxt("tanh_w_list.txt", w_list)
+
+for i in w_list:
+    w = i
+    print("run",w)
+    contourPlot(V_list, L_list, title=f"Tunneling w_a0={w/a0}", dat=dat,show=True)
+
+    # plt.figure()
+    # plt.title(f"Barrier Shape w={i}")
+    # plt.plot(x * 10 ** 6, tanhBarrierNorm(x, V_list[0], L_list[0], i) / (scale * 10 ** 3), label="Smallest Barrier")
+    # plt.plot(x * 10 ** 6, tanhBarrierNorm(x, V_list[0], L_list[-1], i) / (scale * 10 ** 3), label="Largest Barrier")
+    # plt.xlabel("x (micrometers)")
+    # plt.ylabel("V (kHz)")
+    # plt.legend(fancybox="True")
+    # plt.savefig(f"Barrier Shape w={i} Norm")
 
 ########## Changing L
 # n = 1000
@@ -177,18 +188,18 @@ s_list = np.logspace(-6, -5.5, 100)
 # plt.show()
 
 ########## Changing E
-n = 1000
-V_list = np.linspace(0.5, 1.2, n) * bar_amp
-w_list = np.asarray([10 ** -8, 0.2 * 10 ** -6, 0.3 * 10 ** -6, 10 ** -6])
-for w in w_list:
-    T_prob = []
-    for v in V_list:
-        T_prob.append(T_t(L, v))
-    plt.plot(V_list / (scale * 10 ** 3), T_prob, label=f"w={w}")
-
-plt.title(f"Tunneling Spectra fixed L={L}m")
-plt.xlabel("V0/E")
-plt.ylabel("Tunneling Probability")
-plt.legend(loc="best", framealpha=1)
-plt.savefig("Tanh_W_Tunneling.png")
-plt.show()
+# n = 1000
+# V_list = np.linspace(0.5, 1.2, n) * bar_amp
+# w_list = np.asarray([10 ** -8, 0.2 * 10 ** -6, 0.3 * 10 ** -6, 10 ** -6])
+# for w in w_list:
+#     T_prob = []
+#     for v in V_list:
+#         T_prob.append(T_t(L, v))
+#     plt.plot(V_list / (scale * 10 ** 3), T_prob, label=f"w={w}")
+#
+# plt.title(f"Tunneling Spectra fixed L={L}m")
+# plt.xlabel("V0/E")
+# plt.ylabel("Tunneling Probability")
+# plt.legend(loc="best", framealpha=1)
+# plt.savefig("Tanh_W_Tunneling.png")
+# plt.show()

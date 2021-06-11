@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import simps
 from scipy.optimize import curve_fit
 
-
-# from Input_Parameters_Realistic import *
+from Input_Parameters_Realistic import *
 
 
 def gauss(x, mu=0, sig=1):
@@ -44,9 +43,8 @@ def barrier5(x, w, L):
     return raw
 
 
-def barrier7(x, w, L):
-    w = w
-    return np.tanh(1 / w * (2 / w + np.e) ** (-4 * (x ** 2) / L ** 2)) / np.tanh(1 / w)
+def barrier7(x, al, L):
+    return np.tanh(al * (al + np.e) ** (-(x ** 2) / L ** 2)) / np.tanh(al)
 
 
 def barrier6(x, w, L):
@@ -70,23 +68,39 @@ def constants(x, w):
     print(f"Norm = {simps(barrier2(x, w), x)}")
 
 
-x = np.linspace(-10, 10, 10000)
-w_list = [10 ** -100, 0.01, 0.1, 1, 100]
+# x = np.linspace(-10, 10, 10000)
+w_list = [10 ** -100, 0.1, 100]
 w_list = [10 ** -100, 0.1, 100]
 
 # w_list = [0.1, 1,1000]
 # w_list = np.logspace(-6, 1, num=100)
 
-L = 6
+# L = 6
+
+m = 1.44316072 * 10 ** -25
+hbar = 1.0545718 * 10 ** -34
+V0 = 10 ** -30
+
+e = V0
+l = np.sqrt(hbar ** 2 / (2 * m * V0))
+L = 5 * l
+
+x = np.linspace(-10, 10, 1000) * l
+dx = x[1] - x[0]
+
 ####Plot many barriers
-# for i in w_list:
-#     plt.plot(x, barrier6(x, i, L), label=f"{i}")
-# plt.legend()
+al_list = 1 / np.asarray(w_list)
+for al in al_list:
+    plt.plot(x / l, barrier7(x, al, L), label=fr"${al}$")
+plt.legend()
 # plt.title("Interpolating Barrier for various w")
-# plt.xlabel("x")
-# plt.ylabel("f(x)")
-# plt.savefig("Correct_Barriers.png")
-# plt.show()
+plt.xlabel(r"$x/l$")
+plt.ylabel(r"$V(x)/V_0$")
+plt.xlim(-10, 10)
+plt.ylim(0, 1.02)
+plt.tight_layout()
+plt.savefig("Correct_Barriers.png")
+plt.show()
 
 ###### Fitting
 # w = 1000
@@ -110,9 +124,9 @@ L = 6
 # plt.show()
 
 ##### Better Variables
-w_list = [-1, 0, 1, 10, 100]
-w_list = [10 ** -100, 0.01, 100]
-for w in w_list:
-    bar = barrier7(x, w, L)
-    plt.plot(x, bar)
-plt.show()
+# w_list = [-1, 0, 1, 10, 100]
+# w_list = [10 ** -100, 0.01, 100]
+# for w in w_list:
+#     bar = barrier7(x, w, L)
+#     plt.plot(x, bar)
+# plt.show()

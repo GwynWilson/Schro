@@ -49,14 +49,14 @@ def varyE(E_list):
 # plt.show()
 
 ###### Vvaryation
-# V_list = np.linspace(0.5, 0.75, 1000) * bar_amp
-# T_list = varyV(V_list)
-# plt.plot(V_list / E, T_list)
-# plt.title("Cos Tunneling")
-# plt.xlabel("V0/E")
-# plt.ylabel("Tunneling Probability")
+V_list = np.linspace(0.5, 0.75, 1000) * bar_amp
+T_list = varyV(V_list)
+plt.plot(V_list / E, T_list)
+plt.title("Cos Tunneling")
+plt.xlabel("V0/E")
+plt.ylabel("Tunneling Probability")
 # plt.savefig("cos_oscillation.png")
-# plt.show()
+plt.show()
 
 ####### Evaryation
 # E_list = np.linspace(1.3,1.5,1000)*E
@@ -66,12 +66,12 @@ def varyE(E_list):
 # plt.show()
 
 ####### Gauss Oscillations
-V_list = np.linspace(0.5, 0.65, 1000) * bar_amp
-T_list = varyV(V_list, gauss=True)
-plt.plot(V_list / E, T_list)
-plt.title("Gaussian Tunneling")
-plt.savefig("gauss.png")
-plt.show()
+# V_list = np.linspace(0.5, 0.65, 1000) * bar_amp
+# T_list = varyV(V_list, gauss=True)
+# plt.plot(V_list / E, T_list)
+# plt.title("Gaussian Tunneling")
+# plt.savefig("gauss.png")
+# plt.show()
 
 ##### Tanh Barrier
 # plt.plot(x, tanhBarrier(x, L, bar_amp, 10 ** (-5)))

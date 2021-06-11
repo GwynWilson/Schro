@@ -11,7 +11,7 @@ class Animate():
     Class that carries out the animating of the wave function evolution
     """
 
-    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None,scale=(1,1,1)):
+    def __init__(self, sch, V, step, dt, lim1=None, lim2=None, title=None, frames=None, scale=(1, 1, 1)):
         """
         Initialising the Wave function
         :param sch: Schrodinger class that the Anminate class will evolve
@@ -37,6 +37,7 @@ class Animate():
         self.fig.subplots_adjust(hspace=0.4)
         self.ax1 = self.fig.add_subplot(211)
         self.line1, = self.ax1.plot([], [], label=r'$|\psi(x)|^2$')
+
         self.potential, = self.ax1.plot([], [], label=r'$V(x)$')
         self.time_text = self.ax1.text(.7, .9, '', fontsize=10)
         self.ax1.legend(loc=1)
@@ -74,11 +75,8 @@ class Animate():
         self.potential.set_data([], [])
         return self.line1, self.line2, self.potential,
 
-    def animate(self, i):
+    def animate(self, i, schro=None, func=None, args=None):
         self.sch.evolve_t(self.step, self.dt)
-
-        # print(self.sch.t)
-        # print(self.sch.norm_x())
 
         self.line1.set_data(self.sch.x, self.sch.mod_square_x(True))
         self.line1.set_label('This')
@@ -86,13 +84,35 @@ class Animate():
         # self.potential.set_data(self.sch.x, self.sch.v / max(self.sch.v))
         self.potential.set_data(self.sch.x, self.sch.v)
         self.line2.set_data(fftshift(self.sch.k), (fftshift(self.sch.mod_square_k(r=True))))
-        return self.line1, self.line2, self.potential, self.time_text,
 
-    def make_fig(self):
+        if schro != None:
+            schro.evolve_t(self.step, self.dt)
+            self.line3.set_data(schro.x, schro.mod_square_x(True))
+
+        elif func != None:
+            xt, pt, at, gt, psi_h = func(self.sch, args)
+            mod_psi_h = psi_h * np.conjugate(psi_h)
+            self.line3.set_data(self.sch.x, mod_psi_h)
+
+        else:
+            self.line3.set_data([],[])
+
+        return self.line1, self.line2, self.line3, self.potential, self.time_text,
+
+    def make_fig(self, schro=None, func=None, args=None, label=""):
         self.init()
 
+        if schro != None or func != None:
+
+            if label != "":
+                self.line3, = self.ax1.plot([], [], label=label, linestyle=":")
+                self.ax1.legend(loc=1)
+
+        else:
+            self.line3, = self.ax1.plot([], [], linestyle=":")
+
         anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init,
-                                       frames=self.frames, interval=30, blit=True)
+                                       frames=self.frames, interval=30, blit=True, fargs=(schro, func, args))
 
         if self.title != None:
             Writer = animation.writers['ffmpeg']

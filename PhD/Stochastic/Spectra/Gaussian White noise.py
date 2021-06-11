@@ -15,8 +15,8 @@ n = int(t / dt)
 print(n)
 time = [i * dt for i in range(n)]
 
-mu = 2
-sig = 2
+mu = 0
+sig = 1
 x = ito.randGauss(mu, sig, n)
 print(np.sqrt(np.var(x)))
 print(np.mean(x))
@@ -64,11 +64,31 @@ sig3 = 0
 # plt.show()
 
 ###### Power Density?
+# f, pwr = signal.periodogram(x, 1 / dt)
+# plt.semilogy(f, pwr)
+# plt.xlim([f[1], f[-1]])
+# plt.title("Power spectra for gaussian sampling")
+# plt.xlabel("Frequency")
+# plt.ylabel("Power")
+# # plt.savefig("Power Spectra Gauss")
+# plt.show()
+
+
+######Gauss squared
+x = sig * np.random.randn(n) + mu
+xs = x**2
+# plt.plot(time,xs)
+# plt.show()
+
 f, pwr = signal.periodogram(x, 1 / dt)
-plt.semilogy(f, pwr)
+f2, pwr2 = signal.periodogram(xs, 1 / dt)
+plt.semilogy(f2,pwr2,label="x^2")
+plt.semilogy(f, pwr,label="x")
+
 plt.xlim([f[1], f[-1]])
 plt.title("Power spectra for gaussian sampling")
 plt.xlabel("Frequency")
 plt.ylabel("Power")
+plt.legend()
 # plt.savefig("Power Spectra Gauss")
 plt.show()

@@ -32,7 +32,7 @@ class Schrodinger(object):
 
         self.psi_x = psi
         self.psi_k = fftshift(fft(psi))
-        self.normalise_x()
+        # self.normalise_x()
         self.psi_squared = self.mod_square_x(r=True)
         self.potential = None
 
@@ -116,7 +116,7 @@ class Schrodinger(object):
             self.evolve_k()
             self.psi_x = ifft(fftshift(self.psi_k), norm="ortho")
             self.evolve_x(half=True)
-            self.psi_x = self.normalise_x()
+            # self.psi_x = self.normalise_x()
 
         self.t += (N_steps * self.dt)
 
@@ -173,6 +173,14 @@ class Schrodinger(object):
         self.mod_square_x()
         return simps(self.psi_squared, self.x)
 
+    def norm_k(self):
+        """
+        Outputs normalisation of K
+        :return:
+        """
+        self.mod_square_k()
+        return simps(self.psi_squared_k, self.k)
+
     def expectation_x(self):
         """
         :return: Returns expectation value of x
@@ -182,7 +190,8 @@ class Schrodinger(object):
         return simps(y, self.x)
 
     def expectation_k(self):
-        self.mod_square_k
+        self.normalise_k()
+        self.mod_square_k()
         return simps(self.psi_squared_k * self.k, self.k)
 
     def expectation_x_square(self):
@@ -192,6 +201,16 @@ class Schrodinger(object):
         self.mod_square_x()
         y = self.psi_squared * self.x * self.x
         return simps(y, self.x)
+
+    def momentum_kick(self, k_kick):
+        """
+        Kicks momentum by a value k_kick
+        :param k_kick:
+        :return:
+        """
+        x0 = self.expectation_x()
+        self.psi_x = self.psi_x * np.exp(1j * k_kick * (self.x - x0))
+        return 0
 
     def barrier_transmition(self):
         """

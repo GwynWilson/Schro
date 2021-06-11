@@ -27,9 +27,13 @@ E = scale * 10 ** 3
 k0 = np.sqrt(2 * m * E / (hbar ** 2) - 1 / (4 * sig ** 2))
 
 bar_amp = scale * 10 ** 3
+bar_amp = 10 ** -30
+
 w = 10 ** -6
 L = 4*10**-6
 
+bar_amp = 100*hbar ** 2 / (m * L ** 2)
+E = bar_amp
 
 if __name__=="__main__":
     from Numerical_Constants import Constants

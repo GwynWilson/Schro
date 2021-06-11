@@ -75,8 +75,9 @@ y1_ind = np.where(B_centre == min(B_centre))[0][0]
 y1 = y_zoom[y1_ind]
 print("Actual min", y1)
 print("Aprox Min", k / Bx * (1 - k ** 2 / (2 * Bx ** 2 * d ** 2)))
+print("Aprox Min2", (d/2 *(d**2 + 4*(k/Bx)**2)**(1/2) - d**2/2)**(1/2))
 print("y0", y0)
-print(y0**3/d**3)
+
 
 ####Wire
 # plt.plot(y_list, abs(Bx - wire(y_list)), label="Infinite")
@@ -131,10 +132,11 @@ print(y0**3/d**3)
 # Z, Y = np.meshgrid(z_list, y_list)
 # Btot = T_array(z_list, y_list)
 # a = plt.contourf(Z, Y, Btot, 20, cmap="gist_heat")
+# # a = plt.heatmap(Z, Y, Btot, 20, cmap="gist_heat")
 # plt.colorbar(a)
-# plt.title("Total magnetic field in x=0 plane")
-# plt.xlabel("z")
-# plt.ylabel("y")
+# plt.title("Total magnetic field (kg A^(-1) S^(-2))")
+# plt.xlabel("z (m)")
+# plt.ylabel("y (m)")
 # plt.tight_layout()
 # plt.savefig(f"Btot_cont_{Bx}")
 # plt.show()

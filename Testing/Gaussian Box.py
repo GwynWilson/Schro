@@ -17,6 +17,9 @@ def wave_init_2(x, sig, x0, k0=0):
 def gauss_init(x, k0, x0=0, d=1):
     return 1 / np.sqrt((d * np.sqrt(2 * np.pi))) * np.exp(-(x - x0) ** 2 / (4 * d ** 2)) * np.exp(1j * k0 * x)
 
+def gauss_interf(x,k0,x1,d=1):
+    return gauss_init(x,k0,x1) + gauss_init(x,-k0,-x1)
+
 
 def gaussbox(x, w, L, x0=0, A=1, a=0):
     temp = A * (np.exp(-(x - x0) ** 2 / w ** 2) + np.exp(-(x - (x0 + L)) ** 2 / w ** 2)) + m * a * x
@@ -61,7 +64,7 @@ d = 4
 a = 10
 
 # Defining Psi and V
-k_initial = 0
+k_initial = 10
 Amp = 1000
 w = 1
 L = int(0.4 * x_length)
@@ -70,7 +73,9 @@ xb = -L / 2
 # K=10,A=10**1.7
 
 psi_x = gauss_init(x, k_initial, x0=0, d=d)
+psi_x = gauss_interf(x,k_initial,xb,d=d)
 V_x = gaussbox(x, w, L, x0=xb, A=Amp, a=a)
+V_x= np.zeros(len(psi_x))
 
 # Defining K range
 dk = dx / (2 * np.pi)
@@ -95,9 +100,11 @@ sch = Schrodinger(x, psi_x, V_x, k, hbar=hbar, m=m, t=t)
 # plt.ylim(0, max(np.real(psi_x)))
 # plt.show()
 
-
+print("here")
+# a = Animate(sch, V_x, step, dt, lim1=((-x_length / 4, x_length / 4), (-0.1, 0.5)),
+#             lim2=((ks[0], ks[N - 1]), (0, 1)), title="GB_a=10", frames=Ns)
 a = Animate(sch, V_x, step, dt, lim1=((-x_length / 4, x_length / 4), (-0.1, 0.5)),
-            lim2=((ks[0], ks[N - 1]), (0, 1)), title="GB_a=10", frames=Ns)
+            lim2=((ks[0], ks[N - 1]), (0, 1)), frames=Ns)
 a.make_fig()
 
 # a_list = np.arange(1, 10, 2)
