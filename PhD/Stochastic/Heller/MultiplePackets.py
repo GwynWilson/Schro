@@ -5,6 +5,8 @@ from PhD.Stochastic.Heller import Heller as hl
 from Schrodinger_Solver import Schrodinger
 from scipy.integrate import simps
 
+plt.rcParams['animation.ffmpeg_path'] = 'C:\\ffmpeg\\FFmpeg\\bin\\ffmpeg.exe'
+
 
 class HellerInterference():
 
@@ -25,11 +27,17 @@ class HellerInterference():
             (1j / self.hbar) * at * (self.x - xt) ** 2 + (1j / self.hbar) * self.m * vt * (self.x - xt) + (
                     1j / self.hbar) * gt)
 
+    def hellerPacketVal(self, vals):
+        xt, vt, at, gt = vals
+        return np.exp(
+            (1j / self.hbar) * at * (self.x - xt) ** 2 + (1j / self.hbar) * self.m * vt * (self.x - xt) + (
+                    1j / self.hbar) * gt)
+
     def runAll(self):
         psi_comb = np.zeros((self.n, len(self.x)), dtype=complex)
         for initi in self.initarray:
             tempHel = hl.Heller(self.n, self.dt, initi, self.derivs)
-            tempHel.rk4(self.args)
+            tempHel.rk4dt(self.args)
 
             psi_arr = np.zeros((self.n, len(self.x)), dtype=complex)
             for i in range(self.n):
@@ -44,7 +52,7 @@ class HellerInterference():
     def onePacket(self, kick, init, plot=False, final=False, dat=False):
         Nhalf = int(self.n / 2)
         tempHel = hl.Heller(Nhalf, self.dt, init, self.derivs)
-        tl, xl, vl, al, gl = tempHel.rk4(self.args)
+        tl, xl, vl, al, gl = tempHel.rk4dt(self.args)
 
         psi_arr = np.zeros((self.n, len(self.x)), dtype=complex)
         for i in range(Nhalf):
@@ -54,7 +62,7 @@ class HellerInterference():
 
         init2 = [xl[-1], vl[-1] + kick, al[-1], gl[-1]]
         tempHel2 = hl.Heller(Nhalf, self.dt, init2, self.derivs)
-        tl2, xl2, vl2, al2, gl2 = tempHel2.rk4(self.args)
+        tl2, xl2, vl2, al2, gl2 = tempHel2.rk4dt(self.args)
         for i in range(Nhalf):
             xi, vi, ai, gi = tempHel2.getState(i)
             psi_i = self.hellerPacket(xi, vi, ai, gi)
@@ -83,6 +91,58 @@ class HellerInterference():
 
         else:
             return psi_arr
+
+    def onePacketArr(self, kick, init):
+        # One packet motion giving only the heller values
+        init = np.copy(init)
+        Nhalf = int(self.n / 2)
+        init[1] += kick
+        tempHel = hl.Heller(Nhalf, self.dt, init, self.derivs)
+        tl, xl, vl, al, gl = tempHel.rk4dt(self.args)
+
+        init2 = [xl[-1], vl[-1] - 2 * kick, al[-1], gl[-1]]
+        tempHel2 = hl.Heller(Nhalf + 1, self.dt, init2, self.derivs)
+        tl2, xl2, vl2, al2, gl2 = tempHel2.rk4dt(self.args)
+
+        tlcomb = np.concatenate((tl, np.asarray(tl2[1:]) + tl[-1]), axis=None)
+        xlcomb = np.concatenate((xl, xl2[1:]), axis=None)
+        vlcomb = np.concatenate((vl, vl2[1:]), axis=None)
+        alcomb = np.concatenate((al, al2[1:]), axis=None)
+        glcomb = np.concatenate((gl, gl2[1:]), axis=None)
+
+        hel_dat = np.zeros((self.n, len(init)), dtype=complex)  # Unsure about this -1
+        for i in range(self.n):  # Unsure about this -1
+            hel_dat[i] = [xlcomb[i], vlcomb[i], alcomb[i], glcomb[i]]
+
+        return hel_dat
+
+    def onePacketArrNoise(self, kick, init, noise):
+        # One packet motion giving only the heller values
+
+        firstnoise = noise[:int(self.n / 2)]
+        secondnoise = noise[int(self.n / 2) - 1:]  # Index may be changed later
+
+        init = np.copy(init)
+        Nhalf = int(self.n / 2)
+        init[1] += kick
+        tempHel = hl.Heller(Nhalf, self.dt, init, self.derivs)
+        tl, xl, vl, al, gl = tempHel.rk4dt(self.args, noise=firstnoise)
+
+        init2 = [xl[-1], vl[-1] - 2 * kick, al[-1], gl[-1]]
+        tempHel2 = hl.Heller(Nhalf + 1, self.dt, init2, self.derivs)
+        tl2, xl2, vl2, al2, gl2 = tempHel2.rk4dt(self.args, noise=secondnoise)
+
+        tlcomb = np.concatenate((tl, np.asarray(tl2[1:]) + tl[-1]), axis=None)
+        xlcomb = np.concatenate((xl, xl2[1:]), axis=None)
+        vlcomb = np.concatenate((vl, vl2[1:]), axis=None)
+        alcomb = np.concatenate((al, al2[1:]), axis=None)
+        glcomb = np.concatenate((gl, gl2[1:]), axis=None)
+
+        hel_dat = np.zeros((self.n, len(init)), dtype=complex)  # Unsure about this -1
+        for i in range(self.n):  # Unsure about this -1
+            hel_dat[i] = [xlcomb[i], vlcomb[i], alcomb[i], glcomb[i]]
+
+        return hel_dat
 
     def interferometry(self):
         psi_comb = np.zeros((self.n, len(self.x)), dtype=complex)
@@ -125,6 +185,102 @@ class HellerInterference():
         self.psi_comb = psi_comb
 
         return self.psi_comb
+
+    def interferometry3Arr(self, kick, noise=[], symmetric=False):
+        # WIP More realistic interferometer? Not quite
+
+        ####### Symmetric interferometer
+        if symmetric:
+            init1 = self.initarray[0]
+            init2 = self.initarray[1]
+
+            if noise == []:
+                psiarr1 = self.onePacketArr(-kick, init1)
+                psiarr2 = self.onePacketArr(kick, init2)
+
+            else:
+                psiarr1 = self.onePacketArrNoise(-kick, init1, noise)
+                psiarr2 = self.onePacketArrNoise(kick, init2, noise)
+
+
+
+        ####### One way interferometer
+        else:
+            init1 = self.initarray[0]
+            init2 = self.initarray[1]
+
+            if noise == []:
+                psiarr1 = self.onePacketArr(0, init1)
+                psiarr2 = self.onePacketArr(kick, init2)
+
+            else:
+                psiarr1 = self.onePacketArrNoise(0, init1, noise)
+                psiarr2 = self.onePacketArrNoise(kick, init2, noise)
+
+        return psiarr1, psiarr2
+
+    def machZender(self, kick, w, phi):
+        Nhalf = int(self.n / 2)
+        ####### psi1
+        init11 = np.copy(self.initarray[0])
+        tempHel1 = hl.Heller(Nhalf, self.dt, init11, self.derivs)
+        tl, xl, vl, al, gl = tempHel1.rk4dt(self.args)
+
+        add_phase = -self.m * kick * xl[-1] / self.hbar - self.hbar * w * tl[-1] - self.hbar * phi[1]
+        init12 = [xl[-1], vl[-1] + kick, al[-1], gl[-1] + add_phase]
+        tempHel12 = hl.Heller(Nhalf + 1, self.dt, init12, self.derivs)
+        tl2, xl2, vl2, al2, gl2 = tempHel12.rk4dt(self.args)
+
+        tlcomb = np.concatenate((tl, np.asarray(tl2[1:]) + tl[-1]), axis=None)
+        xlcomb = np.concatenate((xl, xl2[1:]), axis=None)
+        vlcomb = np.concatenate((vl, vl2[1:]), axis=None)
+        alcomb = np.concatenate((al, al2[1:]), axis=None)
+        glcomb = np.concatenate((gl, gl2[1:]), axis=None)
+
+        hel_dat1 = np.zeros((self.n, len(init11)), dtype=complex)
+        for i in range(self.n):
+            hel_dat1[i] = [xlcomb[i], vlcomb[i], alcomb[i], glcomb[i]]
+
+        ######### psi2
+        init21 = np.copy(self.initarray[1])
+        add_phase = -self.m * kick * init21[0] / self.hbar - self.hbar * phi[0]
+        init21 = [init21[0], init21[1] + kick, init21[2], init21[3] + add_phase]
+        tempHel2 = hl.Heller(Nhalf, self.dt, init21, self.derivs)
+        tl, xl, vl, al, gl = tempHel2.rk4dt(self.args)
+
+        add_phase = self.m * kick * xl[-1] / self.hbar +self.hbar* w * tl[-1] + self.hbar * phi[1]
+        init22 = [xl[-1], vl[-1] - kick, al[-1], gl[-1]+add_phase]
+        tempHel22 = hl.Heller(Nhalf + 1, self.dt, init22, self.derivs)
+        tl2, xl2, vl2, al2, gl2 = tempHel22.rk4dt(self.args)
+
+        vl2[-1] +=kick
+        gl2[-1] += -self.m*kick*xl2[-1]/self.hbar - self.hbar*w*(tl2[-1]+tl[-1]) - self.hbar*phi[2]
+
+        tlcomb = np.concatenate((tl, np.asarray(tl2[1:]) + tl[-1]), axis=None)
+        xlcomb = np.concatenate((xl, xl2[1:]), axis=None)
+        vlcomb = np.concatenate((vl, vl2[1:]), axis=None)
+        alcomb = np.concatenate((al, al2[1:]), axis=None)
+        glcomb = np.concatenate((gl, gl2[1:]), axis=None)
+
+        hel_dat2 = np.zeros((self.n, len(init21)), dtype=complex)  # Unsure about this -1
+        for i in range(self.n):  # Unsure about this -1
+            hel_dat2[i] = [xlcomb[i], vlcomb[i], alcomb[i], glcomb[i]]
+
+        return tlcomb,hel_dat1,hel_dat2
+
+    def arrToPacket(self, arr1, arr2):
+        psi_comb = np.zeros((self.n, len(self.x)), dtype=complex)
+        for i in range(self.n):
+            psi1 = self.hellerPacketVal(arr1[i])
+            psi2 = self.hellerPacketVal(arr2[i])
+            psi_comb[i] = (psi1 + psi2) / np.sqrt(2)
+        return psi_comb
+
+    def interferometry3(self, kick, noise=None):
+        arr1, arr2 = self.interferometry3Arr(kick, noise=noise)
+
+        psi_comb = self.arrToPacket(arr1, arr2)
+        return psi_comb
 
     def modSquare(self):
         shape = np.shape(self.psi_comb)
@@ -342,6 +498,45 @@ class Comparison():
             return helline, schroline, time_text
 
         animation.FuncAnimation(fig, update, init_func=initFunc, interval=1, blit=True, save_count=50)
+        plt.show()
+
+        return 0
+
+    def animateArr(self, arr, potential=[], save=""):
+        psis = self.modSquare(arr)
+        maximum = max(psis[0])
+
+        fig, ax = plt.subplots()
+        psiline, = ax.plot(self.x, psis[0], label="Heller")
+        time_text = ax.text(self.x[int(0.01 * self.n)], maximum * 0.9, 't', fontsize=13)
+        if potential != []:
+            ax.plot(self.x, potential)
+        ax.set_xlim((self.x[0], self.x[-1]))
+        ax.set_ylim((0, maximum))
+        ax.legend(loc=1)
+
+        def initFunc():
+            psiline.set_data(self.x, psis[0])
+            time_text.set_text(f"t=0")
+            return psiline, time_text,
+
+        def update(i):
+            # if i >= Ntot:
+            #     i = 0
+            psiline.set_data(self.x, self.h_psi_sq[i % self.n])
+            time_text.set_text(f"t={self.tl[i % self.n]:.3f}")
+            # line.set_data(x, np.sin(x + i / 100))
+
+            return psiline, time_text
+
+        anim = animation.FuncAnimation(fig, update, init_func=initFunc, interval=1, blit=True, save_count=50,
+                                       frames=self.n)
+
+        if save != "":
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=1800)
+            anim.save(save + '.mp4', writer=writer)
+
         plt.show()
 
         return 0

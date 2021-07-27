@@ -24,9 +24,15 @@ def whiteNoise(n, r, b0):
     fitline = poly1(freq, coeff[0], coeff[1])
     print("Estimated b0", coeff[1])
 
-    plt.plot(freq, psd)
-    plt.plot(freq, fitline)
-    plt.plot()
+    # plt.plot(freq, psd)
+    # plt.plot(freq, fitline)
+    # plt.plot()
+    # plt.show()
+
+    plt.loglog(freq, psd)
+    plt.loglog(freq, fitline)
+    plt.xlabel("f")
+    plt.ylabel("PSD")
     plt.show()
     return 0
 
@@ -41,7 +47,8 @@ def brwonNoise(n, r, b2):
 
     plt.loglog(freq, psd)
     plt.loglog(freq, fitline)
-    plt.plot()
+    plt.xlabel("f")
+    plt.ylabel("PSD")
     plt.show()
     return 0
 
@@ -70,6 +77,6 @@ n_run = 10000
 b0 = 100
 b2 = 10
 
-whiteNoise(n, r, b0)
-# brwonNoise(n,r,b2)
+whiteNoise(n, r, 10**6)
+brwonNoise(n,r,b2)
 # brownAv(n, r, b2, n_run)
