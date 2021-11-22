@@ -530,7 +530,7 @@ class Comparison():
             return psiline, time_text
 
         anim = animation.FuncAnimation(fig, update, init_func=initFunc, interval=1, blit=True, save_count=50,
-                                       frames=self.n)
+                                       frames=intself.n)
 
         if save != "":
             Writer = animation.writers['ffmpeg']

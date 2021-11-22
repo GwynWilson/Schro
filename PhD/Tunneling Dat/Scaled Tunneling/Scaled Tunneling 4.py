@@ -70,16 +70,19 @@ bar = square(x, V0, L)
 # plt.show()
 
 plt.rcParams.update({"font.size": 14})
-L_list = np.array([1, 5, 10]) * l
-# for L_i in L_list:
-#     plt.plot(x / l, square(x, V0, L_i) / V0, label=f"{L_i/l:.0f}")
-# plt.legend()
-# plt.xlabel(r"$x/l$")
-# plt.ylabel(r"$V(x)/\epsilon$")
-# # plt.title("Square barrier varying width")
-# plt.savefig("Scaled Width")
-# plt.show()
+L_list = np.array([3, 5, 10]) * l
+for L_i in L_list:
+    plt.plot(x / l, square(x, V0, L_i) / V0, label=f"{L_i/l:.0f}")
+plt.legend()
+plt.xlabel(r"$x/l$")
+plt.ylabel(r"$V(x)/V_0$")
+plt.xlim(min(x/l),max(x/l))
+plt.ylim(0,1.05)
+# plt.title("Square barrier varying width")
+plt.savefig("Scaled Width")
+plt.show()
 
+L_list = np.array([3,5, 10]) * l
 E_list = np.linspace(0.1, 5, 500) * V0
 for L_i in L_list:
     bar = square(x, V0, L_i)
@@ -94,6 +97,8 @@ for L_i in L_list:
 plt.legend()
 plt.xlabel(r"$E/V_0$")
 plt.ylabel("Transmission Probability")
+plt.xlim(min(E_list/V0),max(E_list/V0))
+plt.ylim(0,1.05)
 # plt.title("Varying Width Transmission")
 plt.savefig("Width Transmission")
 plt.show()
