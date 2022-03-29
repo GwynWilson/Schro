@@ -145,12 +145,76 @@ def runComp(psi, V):
     sch = Schrodinger2D(x, y, psi, V, args)
     hel = Heller2D(Nstep, dt, init, derivsDt)
     tl, hel_arr = hel.rk4(args)
-
     tool = PlotTools()
-    tool.animateComparrison(sch, Nstep, tl, hel_arr, args, xlen / 2, k_lim, full=False,save="Test")
+
+    tool.animateComparrison(sch, Nstep, tl, hel_arr, args, xlen / 2, k_lim, full=False,rp=x0,save="Test")
+    tool.animateComparrison(sch, Nstep, tl, hel_arr, args, xlen / 2, k_lim, full=False, rp=x0)
+
+def runCompFinal(psi, V):
+    # sch = Schrodinger2D(x, y, psi, V, args)
+    # sch.evolvet(Nstep,dt)
+    #
+    # hel = Heller2D(Nstep, dt, init, derivsDt)
+    # tl, hel_arr = hel.rk4(args)
+    # psi_sch = sch.psi_x
+    # # print(hel_arr[-1])
+    # psi_hel = hellerGaussian2D(X,Y,hel_arr[:,-1],args)
+    #
+    #
+    # # Z1 = np.real(sch.psi_x*np.conjugate(sch.psi_x))
+    # # Z2 = np.real(psi_hel*np.conjugate(psi_hel))
+    # save = np.savez("Comparrison", sch=sch.psi_x,hel=psi_hel)
+
+    loaded = np.load("Comparrison.npz")
+    psi_sch = loaded["sch"]
+    psi_hel = loaded["hel"]
+
+    Z1 = np.real(psi_sch*np.conjugate(psi_sch))
+    Z2 = np.real(psi_hel*np.conjugate(psi_hel))
+
+    x_expect = simps(simps(X * Z1, x), y)
+    y_expect = simps(simps(Y * Z1, y), x)
+    #
+    # KX, KY = np.meshgrid(k_arr, k_arr)
+    # psik_sch = fftshift(fftn(psi_sch))
+    # psik_sch *= np.exp(1j * x_expect * KX)
+    # psik_sch *= np.exp(1j * y_expect * KY)
+    # psi_sch = ifftn(fftshift(psik_sch))
+    #
+    # psik_hel = fftshift(fftn(psi_hel))
+    # psik_hel *= np.exp(1j * x_expect * KX)
+    # psik_hel *= np.exp(1j * y_expect * KY)
+    # psi_hel = ifftn(fftshift(psik_hel))
+    #
+    # Z1 = np.real(psi_sch*np.conjugate(psi_sch))
+    # Z2 = np.real(psi_hel*np.conjugate(psi_hel))
 
 
-N = 400
+    fig, ax = plt.subplots(1, 2, figsize=(8, 5))
+
+    theta = np.linspace(-np.pi, np.pi, N)
+    thetax = x0 * np.cos(theta)
+    thetay = x0 * np.sin(theta)
+    thetadup = (thetax, thetay)
+
+    plotlim = 8 * sigx
+    ax[0].imshow(Z1[::-1], extent=[-xlen/2, xlen/2, -xlen/2, xlen/2])
+    ax[1].imshow(Z2[::-1], extent=[-xlen/2, xlen/2, -xlen/2, xlen/2])
+
+    # ax[0].plot(thetax - x_expect, thetay - y_expect, linestyle="--", color="w")
+    # ax[1].plot(thetax - x_expect, thetay - y_expect, linestyle="--", color="w")
+    ax[0].plot(thetax, thetay, linestyle="--", color="w")
+    ax[1].plot(thetax, thetay, linestyle="--", color="w")
+    ax[0].set_title("Split-Step")
+    ax[1].set_title("Heller")
+    ax[0].set_xlim(-plotlim+x_expect, plotlim+x_expect)
+    ax[0].set_ylim(-plotlim+y_expect, plotlim+y_expect)
+    ax[1].set_xlim(-plotlim+x_expect, plotlim+x_expect)
+    ax[1].set_ylim(-plotlim+y_expect, plotlim+y_expect)
+    plt.savefig("Sch_Hel_Comp")
+    plt.show()
+
+N = 1000
 xlen = 250
 dx = xlen / N
 
@@ -172,10 +236,14 @@ x0 = 0
 y0 = 0
 vx0 = 0
 vy0 = 0
-sigx = 8
-sigy = 8
-ax0 = 1j * hbar / (4 * sigx ** 2)
-ay0 = 1j * hbar / (4 * sigy ** 2)
+# sigx = 8
+# sigy = 8
+# ax0 = 1j * hbar / (4 * sigx ** 2)
+# ay0 = 1j * hbar / (4 * sigy ** 2)
+ax0 = 1j * m * w / 2
+ay0 = 1j * m * w / 2
+sigx = np.sqrt(hbar / (2 * m * w))
+sigy = np.sqrt(hbar / (2 * m * w))
 lam = 0
 g0 = (1j * hbar / 2) * np.log(2 * np.pi * sigx * sigy)
 
@@ -219,7 +287,8 @@ x0 = 0.5 * (r0 + np.sqrt(r0 ** 2 + 4 * (vy0 ** 2 / w ** 2)))
 init = [x0, y0, vx0, vy0, ax0, ay0, lam, g0]
 
 t = 0
-T_tot = 4 * np.pi / w
+T_tot = 8 * np.pi / w
+# T_tot = 358
 Nstep = 400
 dt = T_tot / Nstep
 
@@ -243,23 +312,24 @@ psi = hellerGaussian2D(X, Y, init, args)
 
 
 ########### Sch Hel Comparrison
-r0 = 50
-w=0.02
-
-sig = np.sqrt(hbar / (2 * m * w))
-print(sig)
+x0 = r0
+vy0 = 1
 
 x0 = 0.5 * (r0 + np.sqrt(r0 ** 2 + 4 * (vy0 ** 2 / w ** 2)))
-print(x0,xlen)
-ax0 = 1j * hbar / (4 * sig ** 2)
-ay0 = 1j * hbar / (4 * sig ** 2)
+
+# print(x0,xlen)
+ax0 = 1j * m * w / 2
+ay0 = 1j * m * w / 2
+sigx = np.sqrt(hbar / (2 * m * w))
+sigy = np.sqrt(hbar / (2 * m * w))
 lam = 0
-g0 = (1j * hbar / 2) * np.log(2 * np.pi * sig * sig)
+g0 = (1j * hbar / 2) * np.log(2 * np.pi * sigx * sigy)
 init = [x0, y0, vx0, vy0, ax0, ay0, lam, g0]
 
-psi = hellerGaussian2D(X,Y,init,args)
+psi = hellerGaussian2D(X, Y, init, args)
 
-Nstep = 400
-dt = np.pi / 2
-runComp(psi, V)
+Nstep = 800
+dt = np.pi / 4
+# runComp(psi, V)
 # runSim(psi,V)
+runCompFinal(psi,V)

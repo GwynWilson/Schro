@@ -109,12 +109,15 @@ def plotComparisson(psi1, psi2, xlen, klen):
 
 
 N = 500
-len = 200
+len = 150
 dx = len / N
 
 x = np.asarray([i * dx for i in range(N)]) - len / 2
 y = np.asarray([i * dx for i in range(N)]) - len / 2
 # y = y[::-1]  # Reversing array for easier computations
+
+k_lim = np.pi / dx
+k_arr = -k_lim + (2 * k_lim / N) * np.arange(N)
 
 hbar = 1
 m = 1
@@ -133,7 +136,9 @@ sigy = 8
 ax0 = 1j * hbar / (4 * sigx ** 2)
 ay0 = 1j * hbar / (4 * sigy ** 2)
 
-lam = 0
+fact = 1
+lam = 1j * hbar / (4 * (fact * sigy ** 2))
+# lam = 0
 
 g0 = (1j * hbar / 2) * np.log(2 * np.pi * sigx * sigy)
 
@@ -360,3 +365,90 @@ Z = np.real(psi * np.conjugate(psi))
 # fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 # plt.savefig("Slope_Comparison")
 # plt.show()
+
+########## Rottion testing Schrodiner
+t = 0
+ttot = 20
+N_step = 100
+dt = ttot / N_step
+
+V = np.zeros((N, N))  # Flat potential
+
+# psi = psi * np.exp(-1j * X * Y / 8)
+# psi = psi* np.exp(-1j*(1 * X -1*Y))
+
+
+sch = Schrodinger2D(x, y, psi, V, args, t=t)
+
+# tool = PlotTools()
+# tool.animation2D(sch, 1, dt, args, len / 4, k_lim,save="XY_2")
+
+# sch.evolvet(N_step, dt)
+#
+# psif = sch.psi_x
+# Zf = np.real(psif * np.conjugate(psif))
+#
+# fig, ax = plt.subplots()
+# data = ax.imshow(Zf, extent=[-len / 2, len / 2, -len / 2, len / 2])
+# cb = fig.colorbar(data)
+# plt.show()
+
+
+##### Rotation testing heller
+t = 0
+ttot = 20
+N_step = 500
+dt = ttot / N_step
+
+V = np.zeros((N, N))  # Flat potential
+
+psi = psi * np.exp(-1j * X * Y / 8)
+lam += -1 / 8
+
+init = [x0, y0, vx0, vy0, ax0, ay0, lam, g0]
+psi_h = hellerGaussian2D(X, Y, init, args)
+
+Z_sch = np.real(psi * np.conjugate(psi))
+Z_hel = np.real(psi_h * np.conjugate(psi_h))
+
+
+###### Plot Comparrison
+# fig, ax = plt.subplots(1, 2, figsize=(8, 5))
+# sch = ax[0].imshow(Z_sch[::-1], extent=[-len/2, len/2, -len/2, len/2])
+# hel = ax[1].imshow(Z_hel[::-1], extent=[-len/2, len/2, -len/2, len/2])
+# plt.show()
+
+# fig, ax = plt.subplots()
+# diff = ax.imshow(abs(Z_sch[::-1]-Z_hel[::-1]), extent=[-len/2, len/2, -len/2, len/2])
+# a = plt.colorbar(diff)
+# plt.show()
+
+# fig, ax = plt.subplots(1, 2, figsize=(8, 5))
+# real = ax[0].imshow(np.real(psi-psi_h), extent=[-len/2, len/2, -len/2, len/2])
+# imag = ax[1].imshow(np.imag(psi-psi_h), extent=[-len/2, len/2, -len/2, len/2])
+# a = plt.colorbar(real)
+# plt.show()
+
+
+###### Run Comparrison
+
+def derivsDt(t, current, args, eta, dt):
+    m, hbar = args
+    xt, yt, vxt, vyt, axt, ayt, lamt, gt = current
+    xn = vxt * dt
+    yn = vyt * dt
+    vxn = 0 * dt
+    vyn = 0 * dt
+    axn = (-2 * axt ** 2 / m - 0.5 * lamt ** 2 / m) * dt
+    ayn = (-2 * ayt ** 2 / m - 0.5 * lamt ** 2 / m) * dt
+    lamn = (-2 * (axt + ayt) * lamt / m) * dt
+    gn = (1j * hbar * axt / m + 1j * hbar * ayt / m + 0.5 * m * vxt ** 2 + 0.5 * m * vyt ** 2) * dt
+    return xn, yn, vxn, vyn, axn, ayn, lamn, gn
+
+
+sch = Schrodinger2D(x, y, psi, V, args)
+hel = Heller2D(N_step, dt, init, derivsDt)
+tl, hel_arr = hel.rk4(args)
+tool = PlotTools()
+
+tool.animateComparrison(sch, N_step, tl, hel_arr, args, len / 2, k_lim, full=False, rp=x0, save="Test")

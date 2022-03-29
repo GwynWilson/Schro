@@ -134,6 +134,69 @@ class Schrodinger2D(object):
 
         return t_list, x_av, y_av, xs_av, ys_av
 
+    def getRing(self, theta, psis, A):
+        xring = A * np.cos(theta)
+        yring = A * np.sin(theta)
+        psi_list = []
+        for xpar, ypar in zip(xring, yring):
+            indx = np.abs(self.x - xpar).argmin()
+            indy = np.abs(self.y - ypar).argmin()
+            psi_list.append(psis[indy, indx])
+        return psi_list
+
+    def ringExpectation(self, N_steps, dt, rp):
+        theta = np.linspace(-np.pi, np.pi, self.shape[0])
+        self.dt = dt
+        t_list = [i * self.dt for i in range(N_steps)]
+        s_list = []
+        s_wid = []
+
+        x_wid = []
+        y_wid = []
+
+        for i in range(N_steps):
+            expect_x = self.xExpectation()
+            expect_y = self.yExpectation()
+            squared = np.real(self.psi_x * np.conjugate(self.psi_x))
+            psi_ring = self.getRing(theta, squared, rp)
+
+            angle1 = np.arctan2(expect_y, expect_x)
+            theta1 = theta - angle1
+            if abs(angle1) > np.pi / 2:
+                first = psi_ring[:int(len(psi_ring) / 2)]
+                second = psi_ring[int(len(psi_ring) / 2):]
+                psi_ring = np.concatenate((second, first))
+                if angle1 > 0:
+                    theta1 += np.pi
+                else:
+                    theta1 -= np.pi
+
+            expect_xwid = np.sqrt(self.xsExpectation() - expect_x ** 2)
+            x_wid.append(expect_xwid)
+            expect_ywid = np.sqrt(self.ysExpectation() - expect_y ** 2)
+            y_wid.append(expect_ywid)
+
+            s = theta1 * rp
+            # plt.plot(s,psi_ring)
+            # plt.show()
+
+            s_ex = simps(psi_ring * s, s)  # Should always be zero
+            s_s_ex = simps(psi_ring * s ** 2, s)
+            wids = np.sqrt(s_s_ex - s_ex ** 2)
+
+            s_list.append(s_ex)
+            s_wid.append(wids)
+
+            self.psi_k = fftshift(fftn(self.psi_x))
+            self.evolvek()
+            self.psi_x = ifftn(fftshift(self.psi_k))
+            self.evolvex()
+
+        self.t += (N_steps * self.dt)
+
+        # return t_list, thet_list, thet_wid
+        return t_list, s_list, s_wid, x_wid, y_wid
+
 
 class PlotTools():
     def __init__(self):
@@ -201,7 +264,7 @@ class PlotTools():
         else:
             return fig, ax
 
-    def compareInit(self, psi1, psi2, xlen, klen, save=""):
+    def compareInit(self, psi1, psi2, xlen, klen, other=[], save=""):
         psi1k = fftshift(fftn(psi1))
         Z1 = np.real(psi1 * np.conjugate(psi1))
         Z1k = np.real(psi1k * np.conjugate(psi1k))
@@ -219,6 +282,11 @@ class PlotTools():
         ax[1].set_title("Final")
         plt.suptitle("Position space")
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+        if other!=[]:
+            otherx, othery = other
+            ax[0].plot(otherx,othery, linestyle="--", color="w")
+            ax[1].plot(otherx, othery, linestyle="--", color="w")
 
         if save != "":
             plt.savefig(save + "_xspace.png")
@@ -281,7 +349,7 @@ class PlotTools():
         ani = animation.FuncAnimation(fig, animate, interval=1, blit=False, init_func=init)
 
         if save != "":
-            ani = animation.FuncAnimation(fig, animate, frames=220, interval=1, blit=False, init_func=init)
+            ani = animation.FuncAnimation(fig, animate, frames=100, interval=1, blit=False, init_func=init)
             Writer = animation.writers['ffmpeg']
             writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
             ani.save(f'{save}.mp4', writer=writer)
@@ -326,7 +394,7 @@ class PlotTools():
 
         plt.show()
 
-    def animateComparrison(self, sch, n, tl, arr, args, xlim, klim, save="",full=True):
+    def animateComparrison(self, sch, n, tl, arr, args, xlim, klim, save="",rp=0, full=True):
         initial_psi = sch.psi_x
         Zh = self.hellerGaussian2D(sch.X, sch.Y, arr[:, 0], args)
         psih_x = np.real(Zh * np.conjugate(Zh))
@@ -340,7 +408,7 @@ class PlotTools():
         psis_k = np.real(Zsk * np.conjugate(Zsk))
 
         if full:
-            fig, ax = plt.subplots(2, 2,figsize=(8,6))
+            fig, ax = plt.subplots(2, 2, figsize=(8, 6))
             heller = ax[0, 0].imshow(psih_x[::-1], extent=[-xlim, xlim, -xlim, xlim])
             schro = ax[0, 1].imshow(psis_x[::-1], extent=[-xlim, xlim, -xlim, xlim])
 
@@ -358,17 +426,16 @@ class PlotTools():
                 schro_k.set_array(np.array(psis_k))
 
                 time_text.set_text("")
-                return time_text,heller, schro, heller_k, schro_k
+                return time_text, heller, schro, heller_k, schro_k
 
             def animate(i):
                 index = i % n
-                if index==0:
+                if index == 0:
                     sch.psi_x = initial_psi
 
                 else:
                     sch.evolvet(1, tl[1] - tl[0])
                 time_text.set_text(f"t = {tl[index]:.3f}")
-
 
                 Zh = self.hellerGaussian2D(sch.X, sch.Y, arr[:, index], args)
                 psih_x = np.real(Zh * np.conjugate(Zh))
@@ -385,24 +452,32 @@ class PlotTools():
                 schro.set_array(np.array(psis_x)[::-1])
                 heller_k.set_array(np.array(psih_k)[::-1])
                 schro_k.set_array(np.array(psis_k)[::-1])
-                return time_text,heller, schro, heller_k, schro_k
+                return time_text, heller, schro, heller_k, schro_k
 
 
         else:
-            fig, ax = plt.subplots(1,2,figsize=(8,5))
+            N = np.shape(psih_x)[0]
+            theta = np.linspace(-np.pi, np.pi, N)
+            fig, ax = plt.subplots(1, 2, figsize=(8, 5))
             heller = ax[0].imshow(psih_x[::-1], extent=[-xlim, xlim, -xlim, xlim])
             schro = ax[1].imshow(psis_x[::-1], extent=[-xlim, xlim, -xlim, xlim])
             time_text = ax[0].text(-0.95 * xlim, 0.9 * xlim, '', fontsize=10, color="w")
+            ring1, = ax[0].plot(rp * np.cos(theta), rp * np.sin(theta), linestyle="--", color="w")
+            ring2, = ax[1].plot(rp * np.cos(theta), rp * np.sin(theta), linestyle="--", color="w")
+            ax[0].set_title("Heller")
+            ax[1].set_title("Split-Step")
 
             def init():
                 heller.set_array(np.array(psih_x))
                 schro.set_array(np.array(psis_x))
                 time_text.set_text("")
-                return time_text,heller, schro
+                ring1.set_data(rp * np.cos(theta), rp * np.sin(theta))
+                ring2.set_data(rp * np.cos(theta), rp * np.sin(theta))
+                return time_text, heller, schro, ring1,ring2
 
             def animate(i):
                 index = i % n
-                if index==0:
+                if index == 0:
                     sch.psi_x = initial_psi
                 else:
                     sch.evolvet(1, tl[1] - tl[0])
@@ -416,7 +491,9 @@ class PlotTools():
 
                 heller.set_array(np.array(psih_x)[::-1])
                 schro.set_array(np.array(psis_x)[::-1])
-                return time_text,heller, schro
+                ring1.set_data(rp * np.cos(theta), rp * np.sin(theta))
+                ring2.set_data(rp * np.cos(theta), rp * np.sin(theta))
+                return time_text, heller, schro,ring1,ring2
 
         ani = animation.FuncAnimation(fig, animate, interval=100, frames=int(n), blit=False, init_func=init)
 
@@ -426,4 +503,85 @@ class PlotTools():
             ani.save(f'{save}.mp4', writer=writer)
 
         plt.tight_layout()
+        plt.show()
+
+    def animateRing(self, sch, nstep, dt, args, xlim, klim, rp, save=""):
+        N = sch.shape[0]
+        theta = np.linspace(-np.pi, np.pi, N)
+        psi_s = np.real(sch.psi_x * np.conjugate(sch.psi_x))
+
+        psi_ring = sch.getRing(theta, psi_s, rp)
+
+        # fig, ax = plt.subplots(1, 2, figsize=(8, 5))
+        # data = ax[0].imshow(psi_s[::-1], extent=[-xlim, xlim, -xlim, xlim])
+        # ringwav, = ax[1].plot(theta, psi_ring)
+        # time_text = ax[0].text(-0.95 * xlim, 0.9 * xlim, '', fontsize=10, color="w")
+        #
+        # fig.subplots_adjust(right=0.8)
+        # cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+        # fig.colorbar(data, cax=cbar_ax)
+        #
+        # def init():
+        #     data.set_array(np.array(psi_s))
+        #     ringwav.set_data(theta, psi_ring)
+        #     time_text.set_text("")
+        #     return data, ringwav, time_text
+        #
+        # def animate(i):
+        #     time_text.set_text(f"t = {sch.t:.3f}")
+        #
+        #     sch.evolvet(nstep, dt)
+        #     Z = sch.psi_x
+        #     psi_s = np.real(Z * np.conjugate(Z))
+        #
+        #     data.set_array(np.array(psi_s)[::-1])
+        #     ringwav.set_data(theta, sch.getRing(theta, psi_s, rp))
+        #     return data, ringwav, time_text
+
+        fig, ax = plt.subplots(1, 2, figsize=(8, 5))
+        line1, = ax[1].plot(theta * rp, psi_ring)
+        wave = ax[0].imshow(psi_s[::-1], extent=[-xlim, xlim, -xlim, xlim])
+        circle, = ax[0].plot(rp * np.cos(theta), rp * np.sin(theta), linestyle="--", color="w")
+
+        def init():
+            line1.set_data([], [])
+            return line1,
+
+        def animate(i):
+            sch.evolvet(nstep, dt)
+            Z = sch.psi_x
+            psi_s = np.real(Z * np.conjugate(Z))
+            wave.set_array(np.asarray(psi_s)[::-1])
+
+            psi_ring = sch.getRing(theta, psi_s, rp)
+
+            expecx = sch.xExpectation()
+            expecy = sch.yExpectation()
+            angle1 = np.arctan2(expecy, expecx)
+            theta1 = theta - angle1
+            if abs(angle1) > np.pi / 2:
+                # psi_ring= fftshift(psi_ring)
+                # theta1 = fftshift(theta1)
+                first = psi_ring[:int(N / 2)]
+                second = psi_ring[int(N / 2):]
+                psi_ring = np.concatenate((second, first))
+                if angle1 > 0:
+                    theta1 += np.pi
+                else:
+                    theta1 -= np.pi
+
+            line1.set_data(theta1 * rp, psi_ring)
+
+            circle.set_data(rp * np.cos(theta), rp * np.sin(theta))
+
+        plt.tight_layout()
+        ani = animation.FuncAnimation(fig, animate, interval=1, blit=False)
+
+        if save != "":
+            ani = animation.FuncAnimation(fig, animate, frames=225, interval=1, blit=False, init_func=init)
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=10, metadata=dict(artist='Me'), bitrate=1800)
+            ani.save(f'{save}.mp4', writer=writer)
+
+        # plt.tight_layout()
         plt.show()
